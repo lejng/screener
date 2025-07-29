@@ -21,20 +21,6 @@ class ArbitrageFounder:
         self.rest_swap_connector.exclude_base = exclude_base
         self.rest_spot_connector.exclude_base = exclude_base
 
-    def fetch_spot_tickers(self, spot_exchanges: list[ExchangeName])  -> dict[str, list[TickerData]]:
-        tickers = {}
-        for name in spot_exchanges:
-            current_tickers = self.rest_spot_connector.fetch_spot_by_exchange(name)
-            tickers = self.merge_tickers(tickers, current_tickers)
-        return tickers
-
-    def fetch_swap_tickers(self, swap_exchanges: list[ExchangeName])  -> dict[str, list[TickerData]]:
-        tickers = {}
-        for name in swap_exchanges:
-            current_tickers = self.rest_swap_connector.fetch_swap_by_exchange(name)
-            tickers = self.merge_tickers(tickers, current_tickers)
-        return tickers
-
     def fetch_tickers_in_parallel(self, swap_exchanges: list[ExchangeName], spot_exchanges: list[ExchangeName]) -> dict[str, list[TickerData]]:
         tickers = {}
         max_workers = len(spot_exchanges) + len(swap_exchanges)
@@ -71,13 +57,6 @@ class ArbitrageFounder:
         return merged
 
     def find_arbitrage(self, swap_exchanges: list[ExchangeName], spot_exchanges: list[ExchangeName], min_spread=0.7) -> list[SpreadData]:
-        # how to do it in parallel???
-        """
-        tickers: dict[str, list[TickerData]] = self.merge_tickers(
-            self.fetch_swap_tickers(swap_exchanges),
-            self.fetch_spot_tickers(spot_exchanges)
-        )
-        """
         tickers: dict[str, list[TickerData]] = self.fetch_tickers_in_parallel(swap_exchanges, spot_exchanges)
         spread_list_result = []
         for base_currency, value in tickers.items():
