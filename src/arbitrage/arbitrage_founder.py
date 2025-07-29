@@ -87,6 +87,8 @@ class ArbitrageFounder:
         buy_price_2 = ticker_2.ask
         sell_price_2 = ticker_2.bid
         spreads: list[SpreadData] = []
+        if None in (buy_price_1, sell_price_2, buy_price_2, sell_price_1):
+            self.logger.log_info(f"{ticker_1.get_trading_view_name()} or {ticker_2.get_trading_view_name()} has bid or ask price None")
         if  None not in (buy_price_1, sell_price_2) and buy_price_1 < sell_price_2:
             spread_percent = calculate_buy_sell_spread_percent(buy_price_1, sell_price_2)
             if spread_percent > min_spread:

@@ -3,7 +3,7 @@ from src.arbitrage.arbitrage_founder import ArbitrageFounder, SpreadData
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout,
     QPushButton, QTableWidget, QTableWidgetItem,
-    QLabel, QLineEdit, QHBoxLayout
+    QLabel, QLineEdit, QHBoxLayout, QCheckBox, QProgressBar
 )
 import sys
 from PySide6.QtCore import QThread
@@ -35,17 +35,31 @@ class ArbitrageUI(QWidget):
         spread_layout = self.create_spread_layout()
         self.layout.addLayout(spread_layout)
 
+        # create choose exchange for scan
+        self.all_exchanges: list[ExchangeName] = [
+            ExchangeName.KRAKEN,
+            ExchangeName.BYBIT,
+            ExchangeName.GATE,
+            ExchangeName.MEXC,
+        ]
+        self.swap_checkboxes: dict[ExchangeName, QCheckBox] = {}
+        self.spot_checkboxes: dict[ExchangeName, QCheckBox] = {}
+        self.layout.addLayout(self.create_exchange_checkbox_group("Swap Exchanges", self.swap_checkboxes))
+        self.layout.addLayout(self.create_exchange_checkbox_group("Spot Exchanges", self.spot_checkboxes))
+
         # create find button
         self.button = QPushButton("Find")
         self.button.clicked.connect(self.start_finding_arbitrage)
 
-        # create loading label
-        self.status_label = QLabel("")
-        self.layout.addWidget(self.status_label)
+        # create loading bar
+        self.progress = QProgressBar()
+        self.progress.setRange(0, 0)  # marquee
+        self.progress.hide()
+        self.layout.addWidget(self.progress)
 
         # create table spreads
         self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Base currency", "Buy", "Sell", "Spread", "Current spread (click for update)"])
+        self.table.setHorizontalHeaderLabels(["Base currency", "Buy", "Sell", "Spread", "More info"])
         #self.table.cellClicked.connect(self.on_pair_clicked)
 
         self.layout.addWidget(self.button)
@@ -75,19 +89,28 @@ class ArbitrageUI(QWidget):
         # we can implement it take from ui side
         return exclude_base
 
+    def create_exchange_checkbox_group(self, title: str, checkbox_dict:  dict[ExchangeName, QCheckBox]) -> QHBoxLayout:
+        group_layout = QHBoxLayout()
+        group_label = QLabel(title)
+        group_layout.addWidget(group_label)
+
+        for exchange in self.all_exchanges:
+            checkbox = QCheckBox(exchange.name)
+            checkbox.setChecked(True)
+            checkbox_dict[exchange] = checkbox
+            group_layout.addWidget(checkbox)
+
+        return group_layout
+
     def get_swap_exchanges(self) -> list[ExchangeName]:
-        # we can add field for check or uncheck exchanges
-        # [ExchangeName.KRAKEN, ExchangeName.BYBIT, ExchangeName.GATE, ExchangeName.MEXC]
-        return [ExchangeName.BYBIT, ExchangeName.GATE]
+        return [exchange for exchange, checkbox in self.swap_checkboxes.items() if checkbox.isChecked()]
 
     def get_spot_exchanges(self) -> list[ExchangeName]:
-        # we can add field for check or uncheck exchanges
-        # [ExchangeName.KRAKEN, ExchangeName.BYBIT, ExchangeName.GATE, ExchangeName.MEXC]
-        return [ExchangeName.KRAKEN, ExchangeName.BYBIT, ExchangeName.GATE]
+        return [exchange for exchange, checkbox in self.spot_checkboxes.items() if checkbox.isChecked()]
 
     def start_finding_arbitrage(self):
         min_spread = self.get_min_spread()
-        self.status_label.setText("🔎 Scanning...")
+        self.progress.show()
         self.button.setEnabled(False)
         self.arbitrage_founder.update_exclude_base(self.get_exclude_base())
         self.arbitrage_founder.update_allowed_quotes(self.get_allowed_quotes())
@@ -124,11 +147,11 @@ class ArbitrageUI(QWidget):
             self.table.setItem(index, 1, QTableWidgetItem(spread.ticker_to_buy.get_trading_view_name()))
             self.table.setItem(index, 2, QTableWidgetItem(spread.ticker_to_sell.get_trading_view_name()))
             self.table.setItem(index, 3, QTableWidgetItem(spread.spread_percent.__str__()))
-            self.table.setItem(index, 4, QTableWidgetItem("Click for update"))
+            self.table.setItem(index, 4, QTableWidgetItem("Open"))
 
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
-        self.status_label.setText("✅ Searching finished")
+        self.progress.hide()
         self.button.setEnabled(True)
 
 if __name__ == "__main__":
