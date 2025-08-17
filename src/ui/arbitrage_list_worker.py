@@ -1,24 +1,22 @@
 from PySide6.QtCore import QObject, Signal
 
 from src.arbitrage.arbitrage_founder import ArbitrageFounder, SpreadData
-from src.connectors.common import ExchangeName
+from src.connectors.common_connector import CommonConnector, TickerInfo
+from src.connectors.ticker_fetcher import TickerFetcher
 
 
 class ArbitrageListWorker(QObject):
     finished = Signal(list)
 
-    def __init__(self, min_spread: float, arbitrage_founder: ArbitrageFounder,
-                 swap_exchanges: list[ExchangeName], spot_exchanges: list[ExchangeName]):
+    def __init__(self, min_spread: float, spot_connectors: list[CommonConnector], swap_connectors: list[CommonConnector]):
         super().__init__()
         self.min_spread = min_spread
-        self.arbitrage_founder = arbitrage_founder
-        self.swap_exchanges = swap_exchanges
-        self.spot_exchanges = spot_exchanges
+        self.arbitrage_founder = ArbitrageFounder()
+        self.swap_connectors = swap_connectors
+        self.spot_connectors = spot_connectors
+        self.ticker_fetcher = TickerFetcher()
 
     def run(self):
-        spreads: list[SpreadData] = self.arbitrage_founder.find_arbitrage(
-            self.swap_exchanges,
-            self.spot_exchanges,
-            self.min_spread
-        )
+        tickers: dict[str, list[TickerInfo]] = self.ticker_fetcher.fetch_tickers_in_parallel(self.spot_connectors, self.swap_connectors)
+        spreads: list[SpreadData] = self.arbitrage_founder.find_arbitrage(tickers, self.min_spread)
         self.finished.emit(spreads)

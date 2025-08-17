@@ -1,5 +1,3 @@
-from src.arbitrage.arbitrage_founder import ArbitrageFounder, SpreadData
-
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout,
     QPushButton, QTableWidget, QTableWidgetItem,
@@ -8,16 +6,15 @@ from PySide6.QtWidgets import (
 import sys
 from PySide6.QtCore import QThread
 
+from src.arbitrage.arbitrage_founder import SpreadData
 from src.config.custom_logger import CustomLogger
-from src.connectors.common import ExchangeName, MarketType
+from src.connectors.bybit_connector import BybitConnector
+from src.connectors.common_connector import CommonConnector
+from src.connectors.gate_connector import GateConnector
+from src.connectors.mexc_connector import MexcConnector
 from src.ui.arbitrage_list_worker import ArbitrageListWorker
 
-allowed_quotes = {'USDT', 'USDC', 'USDE'}
-exclude_base = {
-    'BDT', 'TRUMP', 'MAGA', 'TAP', 'ZERO', 'CULT', 'PALM', 'WELL', 'BLOCK', 'REAL', 'WX', 'PBX', 'NEIRO', 'AIT', 'ACP', 'TST', 'FIRE', 'WOLF', 'TRC', 'ALT', 'SOLS', 'BEAM', 'JAM',
-    'CAW','GAME','AIX','CAD','DOMI','NAWS','OXY','ARC','QI','PTC','GO','AIR','BSX','WXT','MTS','GST','URO','FMC','SNS','GMRT','HRT','DEFI','POLC','CLV','WHITE','DESCI','BBQ',
-    'DELABS','PUNDIAI','MAN','CLAY','KITEAI','PIT','PIG','CANTO','CERE'
-}
+default_min_spread: str = "1"
 
 class ArbitrageUI(QWidget):
     def __init__(self):
@@ -26,7 +23,6 @@ class ArbitrageUI(QWidget):
         self.workers = []
         self.threads = []
         self.logger = CustomLogger()
-        self.arbitrage_founder = ArbitrageFounder(self.get_allowed_quotes(), self.get_exclude_base())
         self.setWindowTitle("Arbitration screener")
         self.resize(900, 700)
         self.layout = QVBoxLayout(self)
@@ -36,14 +32,13 @@ class ArbitrageUI(QWidget):
         self.layout.addLayout(spread_layout)
 
         # create choose exchange for scan
-        self.all_exchanges: list[ExchangeName] = [
-            ExchangeName.KRAKEN,
-            ExchangeName.BYBIT,
-            ExchangeName.GATE,
-            ExchangeName.MEXC,
+        self.all_connectors: list[CommonConnector] = [
+            BybitConnector(),
+            GateConnector(),
+            MexcConnector()
         ]
-        self.swap_checkboxes: dict[ExchangeName, QCheckBox] = {}
-        self.spot_checkboxes: dict[ExchangeName, QCheckBox] = {}
+        self.swap_checkboxes: dict[CommonConnector, QCheckBox] = {}
+        self.spot_checkboxes: dict[CommonConnector, QCheckBox] = {}
         self.layout.addLayout(self.create_exchange_checkbox_group("Swap Exchanges", self.swap_checkboxes))
         self.layout.addLayout(self.create_exchange_checkbox_group("Spot Exchanges", self.spot_checkboxes))
 
@@ -58,8 +53,8 @@ class ArbitrageUI(QWidget):
         self.layout.addWidget(self.progress)
 
         # create table spreads
-        self.table = QTableWidget(0, 5)
-        self.table.setHorizontalHeaderLabels(["Base currency", "Buy", "Sell", "Spread", "More info"])
+        self.table = QTableWidget(0, 7)
+        self.table.setHorizontalHeaderLabels(["Base currency", "Ticker to buy", "Buy price", "Ticker to sell", "Sell price", "Spread", "More info"])
         #self.table.cellClicked.connect(self.on_pair_clicked)
 
         self.layout.addWidget(self.button)
@@ -70,52 +65,42 @@ class ArbitrageUI(QWidget):
     def create_spread_layout(self) -> QHBoxLayout:
         filter_layout = QHBoxLayout()
         self.min_spread_input = QLineEdit()
-        self.min_spread_input.setPlaceholderText("0.7")
+        self.min_spread_input.setPlaceholderText(default_min_spread)
         filter_layout.addWidget(QLabel("Min spread (%):"))
         filter_layout.addWidget(self.min_spread_input)
         return filter_layout
 
     def get_min_spread(self) -> float:
         try:
-            return float(self.min_spread_input.text() or "0.7")
+            return float(self.min_spread_input.text() or default_min_spread)
         except ValueError:
             return 0.0
 
-    def get_allowed_quotes(self):
-        # we can implement it take from ui side
-        return allowed_quotes
-
-    def get_exclude_base(self):
-        # we can implement it take from ui side
-        return exclude_base
-
-    def create_exchange_checkbox_group(self, title: str, checkbox_dict:  dict[ExchangeName, QCheckBox]) -> QHBoxLayout:
+    def create_exchange_checkbox_group(self, title: str, checkbox_dict:  dict[CommonConnector, QCheckBox]) -> QHBoxLayout:
         group_layout = QHBoxLayout()
         group_label = QLabel(title)
         group_layout.addWidget(group_label)
 
-        for exchange in self.all_exchanges:
-            checkbox = QCheckBox(exchange.name)
+        for connector in self.all_connectors:
+            checkbox = QCheckBox(connector.get_exchange_name())
             checkbox.setChecked(True)
-            checkbox_dict[exchange] = checkbox
+            checkbox_dict[connector] = checkbox
             group_layout.addWidget(checkbox)
 
         return group_layout
 
-    def get_swap_exchanges(self) -> list[ExchangeName]:
+    def get_swap_exchanges(self) -> list[CommonConnector]:
         return [exchange for exchange, checkbox in self.swap_checkboxes.items() if checkbox.isChecked()]
 
-    def get_spot_exchanges(self) -> list[ExchangeName]:
+    def get_spot_exchanges(self) -> list[CommonConnector]:
         return [exchange for exchange, checkbox in self.spot_checkboxes.items() if checkbox.isChecked()]
 
     def start_finding_arbitrage(self):
         min_spread = self.get_min_spread()
         self.progress.show()
         self.button.setEnabled(False)
-        self.arbitrage_founder.update_exclude_base(self.get_exclude_base())
-        self.arbitrage_founder.update_allowed_quotes(self.get_allowed_quotes())
         # Создаём поток и воркер
-        worker = ArbitrageListWorker(min_spread, self.arbitrage_founder, self.get_swap_exchanges(), self.get_spot_exchanges())
+        worker = ArbitrageListWorker(min_spread, self.get_swap_exchanges(), self.get_spot_exchanges())
         self.start_thread(worker, self.fill_arbitrage_table)
 
     def start_thread(self, worker, update_ui_callback):
@@ -138,16 +123,18 @@ class ArbitrageUI(QWidget):
     def fill_arbitrage_table(self, spreads: list[SpreadData]):
         self.spreads = [
             item for item in spreads
-            if not (item.ticker_to_sell.market_type == MarketType.SPOT
-                    and item.ticker_to_buy.market_type == MarketType.SWAP)
+            if not (item.ticker_to_sell.spot
+                    and item.ticker_to_buy.swap)
         ]
         self.table.setRowCount(len(self.spreads))
         for index, spread in enumerate(self.spreads):
             self.table.setItem(index, 0, QTableWidgetItem(spread.base_currency))
             self.table.setItem(index, 1, QTableWidgetItem(spread.ticker_to_buy.get_trading_view_name()))
-            self.table.setItem(index, 2, QTableWidgetItem(spread.ticker_to_sell.get_trading_view_name()))
-            self.table.setItem(index, 3, QTableWidgetItem(spread.spread_percent.__str__()))
-            self.table.setItem(index, 4, QTableWidgetItem("Open"))
+            self.table.setItem(index, 2, QTableWidgetItem(spread.ticker_to_buy.get_buy_price().__str__()))
+            self.table.setItem(index, 3, QTableWidgetItem(spread.ticker_to_sell.get_trading_view_name()))
+            self.table.setItem(index, 4, QTableWidgetItem(spread.ticker_to_sell.get_sell_price().__str__()))
+            self.table.setItem(index, 5, QTableWidgetItem(spread.spread_percent.__str__()))
+            self.table.setItem(index, 6, QTableWidgetItem("Open"))
 
         self.table.resizeColumnsToContents()
         self.table.resizeRowsToContents()
