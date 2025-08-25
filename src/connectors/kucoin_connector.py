@@ -2,19 +2,17 @@ import ccxt
 from ccxt import Exchange
 from ccxt.base.types import FundingRate
 
-from src.connectors.common_connector import CommonConnector, TickerInfo
+from src.connectors.common_connector import CommonConnector
 
 
-class MexcConnector(CommonConnector):
+class KucoinConnector(CommonConnector):
 
     def __init__(self):
         super().__init__()
-        self.spot_exchange = ccxt.mexc({'options': {'defaultType': 'spot'}})
-        self.swap_exchange = ccxt.mexc({'options': {'defaultType': 'swap'}})
-        self.set_exclude_base({
-            "TROLL","MAGA","GAME","PALM","X","PBX","AIT","TRUMP","ACP","WOLF","NEIRO","ALT",
-            "ARC","BEAM","DEFI","CAW","DAOLITY","POLC","JAM","PIG","PIT","QUBIC","CAD"
-        })
+        self.spot_exchange = ccxt.kucoin({'options': {'defaultType': 'spot'}})
+        self.swap_exchange = ccxt.kucoinfutures({'options': {'defaultType': 'swap'}})
+        self.future_exchange = ccxt.kucoinfutures()
+        self.set_exclude_base(set())
 
     def fetch_funding_rates(self) -> dict[str, FundingRate]:
         symbols = self.load_swap_symbols()
@@ -23,9 +21,6 @@ class MexcConnector(CommonConnector):
             result[symbol] = self.get_swap_exchange().fetch_funding_rate(symbol)
         return result
 
-    def fetch_future_tickers(self) -> list[TickerInfo]:
-        return []
-
     def get_swap_exchange(self) -> Exchange:
         return self.swap_exchange
 
@@ -33,7 +28,7 @@ class MexcConnector(CommonConnector):
         return self.spot_exchange
 
     def get_future_exchange(self) -> Exchange:
-        return self.spot_exchange
+        return self.future_exchange
 
     def get_exchange_name(self) -> str:
-        return "MEXC"
+        return "KUCOIN"
