@@ -12,6 +12,7 @@ class TickerInfo:
     exchange_name: str
     spot: bool
     swap: bool
+    future: bool
     base_currency: str
     quote_currency: str
 
@@ -42,6 +43,8 @@ class TickerInfo:
             return "spot"
         if self.swap:
             return "swap"
+        if self.future:
+            return "future"
         return "unknown"
 
     def get_trading_view_name(self) -> str:
@@ -49,6 +52,8 @@ class TickerInfo:
             return f"{self.exchange_name}:{self.base_currency}{self.quote_currency}"
         if self.swap:
             return f"{self.exchange_name}:{self.base_currency}{self.quote_currency}.P"
+        if self.future:
+            return f"{self.exchange_name}:{self.get_symbol()}"
         return f"{self.exchange_name}:{self.base_currency}{self.quote_currency}.UNKNOWN"
 
 class CommonConnector(ABC):
@@ -69,11 +74,19 @@ class CommonConnector(ABC):
         symbols = self.load_swap_symbols()
         return self.get_swap_exchange().fetch_funding_rates(symbols=symbols)
 
+    def fetch_future_tickers(self) -> list[TickerInfo]:
+        symbols = self.load_future_symbols()
+        tickers: dict[str, Ticker] = self.get_future_exchange().fetch_tickers(symbols=symbols)
+        return [
+            self.convert_to_ticker_info(ticker, False, False, True)
+            for ticker in tickers.values()
+        ]
+
     def fetch_swap_tickers(self) -> list[TickerInfo]:
         symbols = self.load_swap_symbols()
         tickers: dict[str, Ticker] = self.get_swap_exchange().fetch_tickers(symbols=symbols, params={'category': 'swap'})
         return [
-            self.convert_to_ticker_info(ticker, False, True)
+            self.convert_to_ticker_info(ticker, False, True, False)
             for ticker in tickers.values()
         ]
 
@@ -81,17 +94,18 @@ class CommonConnector(ABC):
         symbols: list[str] = self.load_spot_symbols()
         tickers: dict[str, Ticker] = self.get_spot_exchange().fetch_tickers(symbols=symbols, params={'type': 'spot'})
         return [
-            self.convert_to_ticker_info(ticker, True, False)
+            self.convert_to_ticker_info(ticker, True, False, False)
             for ticker in tickers.values()
         ]
 
-    def convert_to_ticker_info(self, ticker: Ticker, spot: bool, swap: bool) -> TickerInfo:
+    def convert_to_ticker_info(self, ticker: Ticker, spot: bool, swap: bool, future: bool) -> TickerInfo:
         base, quote = self.parse_symbol(ticker)
         return TickerInfo(
             ticker=ticker,
             exchange_name=self.get_exchange_name(),
             spot=spot,
             swap=swap,
+            future=future,
             base_currency=base,
             quote_currency=quote
         )
@@ -106,6 +120,9 @@ class CommonConnector(ABC):
         except (AttributeError, IndexError):
             self.logger.log_info(f"Error symbol format: {symbol}, exchange: {self.get_exchange_name()}")
             return 'UNKNOWN', 'UNKNOWN'
+
+    def load_future_market(self) -> dict[str, MarketInterface]:
+        return self.get_future_exchange().load_markets()
 
     def load_swap_market(self) -> dict[str, MarketInterface]:
         return self.get_swap_exchange().load_markets()
@@ -123,6 +140,16 @@ class CommonConnector(ABC):
                     symbols.append(value['symbol'])
         return symbols
 
+    def load_future_symbols(self) -> list[str]:
+        symbols = []
+        markets: dict[str, MarketInterface] = self.load_future_market()
+        for value in markets.values():
+            quote = value.get('quote', '')
+            base =  value.get('base', '')
+            if (value.get('future', False) or value.get('inverse', False)) and quote in self.get_allowed_quotes() and value.get('active', False) and base not in self.get_exclude_base():
+                    symbols.append(value['symbol'])
+        return symbols
+
     def load_swap_symbols(self) -> list[str]:
         symbols = []
         markets: dict[str, MarketInterface] = self.load_swap_market()
@@ -133,8 +160,19 @@ class CommonConnector(ABC):
                     symbols.append(value['symbol'])
         return symbols
 
+    def paginate(self, list_data, page_size: int) -> list:
+        pages = []
+        for index in range(0, len(list_data), page_size):
+            end_index = index + page_size
+            pages.append(list_data[index:end_index])
+        return pages
+
     @abstractmethod
     def get_swap_exchange(self) -> Exchange:
+        pass
+
+    @abstractmethod
+    def get_future_exchange(self) -> Exchange:
         pass
 
     @abstractmethod

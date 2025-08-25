@@ -8,9 +8,11 @@ from PySide6.QtCore import QThread
 
 from src.arbitrage.arbitrage_founder import SpreadData
 from src.config.custom_logger import CustomLogger
+from src.connectors.binance_connector import BinanceConnector
 from src.connectors.bybit_connector import BybitConnector
 from src.connectors.common_connector import CommonConnector
 from src.connectors.gate_connector import GateConnector
+from src.connectors.kucoin_connector import KucoinConnector
 from src.connectors.mexc_connector import MexcConnector
 from src.ui.arbitrage_list_worker import ArbitrageListWorker
 
@@ -35,7 +37,9 @@ class ArbitrageUI(QWidget):
         self.all_connectors: list[CommonConnector] = [
             BybitConnector(),
             GateConnector(),
-            MexcConnector()
+            MexcConnector(),
+            BinanceConnector(),
+            KucoinConnector()
         ]
         self.swap_checkboxes: dict[CommonConnector, QCheckBox] = {}
         self.spot_checkboxes: dict[CommonConnector, QCheckBox] = {}
@@ -124,7 +128,7 @@ class ArbitrageUI(QWidget):
         self.spreads = [
             item for item in spreads
             if not (item.ticker_to_sell.spot
-                    and item.ticker_to_buy.swap)
+                    and (item.ticker_to_buy.swap or item.ticker_to_buy.future))
         ]
         self.table.setRowCount(len(self.spreads))
         for index, spread in enumerate(self.spreads):

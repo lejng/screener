@@ -9,7 +9,8 @@ class TickerFetcher:
         self.logger = CustomLogger()
 
     def fetch_tickers_in_parallel(self, spot_connectors: list[CommonConnector],
-                                  swap_connectors: list[CommonConnector]) -> dict[str, list[TickerInfo]]:
+                                  swap_connectors: list[CommonConnector],
+                                  futures_connectors: list[CommonConnector]) -> dict[str, list[TickerInfo]]:
         tickers = {}
         max_workers = 20
 
@@ -20,6 +21,9 @@ class TickerFetcher:
 
             for connector in swap_connectors:
                 futures.append(executor.submit(connector.fetch_swap_tickers))
+
+            for connector in futures_connectors:
+                futures.append(executor.submit(connector.fetch_future_tickers))
 
             for future in as_completed(futures):
                 try:

@@ -17,6 +17,6 @@ class ArbitrageListWorker(QObject):
         self.ticker_fetcher = TickerFetcher()
 
     def run(self):
-        tickers: dict[str, list[TickerInfo]] = self.ticker_fetcher.fetch_tickers_in_parallel(self.spot_connectors, self.swap_connectors)
+        tickers: dict[str, list[TickerInfo]] = self.ticker_fetcher.fetch_tickers_in_parallel(self.spot_connectors, self.swap_connectors, [])
         spreads: list[SpreadData] = self.arbitrage_founder.find_arbitrage(tickers, self.min_spread)
         self.finished.emit(spreads)
