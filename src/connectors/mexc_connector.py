@@ -1,8 +1,7 @@
 import ccxt
 from ccxt import Exchange
-from ccxt.base.types import FundingRate
 
-from src.connectors.common_connector import CommonConnector, TickerInfo
+from src.connectors.common_connector import CommonConnector, TickerInfo, FundingRateInfo
 
 
 class MexcConnector(CommonConnector):
@@ -16,11 +15,11 @@ class MexcConnector(CommonConnector):
             "ARC","BEAM","DEFI","CAW","DAOLITY","POLC","JAM","PIG","PIT","QUBIC","CAD"
         })
 
-    def fetch_funding_rates(self) -> dict[str, FundingRate]:
+    def fetch_funding_rates(self) -> list[FundingRateInfo]:
         symbols = self.load_swap_symbols()
-        result = {}
+        result = []
         for symbol in symbols:
-            result[symbol] = self.get_swap_exchange().fetch_funding_rate(symbol)
+            result.append(self.fetch_funding_rate(symbol))
         return result
 
     def fetch_future_tickers(self) -> list[TickerInfo]:

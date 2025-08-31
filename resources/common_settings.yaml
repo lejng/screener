@@ -1,0 +1,11 @@
+exchanges:
+  spot: 'BYBIT,GATEIO,KUCOIN,MEXC'
+  swap: 'BYBIT,GATEIO,KUCOIN,MEXC'
+  futures: ''
+  # for top fundings because for some exchanges fetch funding take a lot of times
+  fundings: 'BYBIT,GATEIO,BINANCE'
+  #spot: 'BINANCE,BYBIT,GATEIO,KUCOIN,MEXC'
+  #swap: 'BINANCE,BYBIT,GATEIO,KUCOIN,MEXC'
+  #futures: 'BINANCE,BYBIT,GATEIO,KUCOIN,MEXC'
+
+min_spread: 1
