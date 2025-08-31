@@ -14,7 +14,12 @@ class GateConnector(CommonConnector):
         self.future_exchange = ccxt.gate()
         self.set_exclude_base({
             "BDT", "ZERO", "CULT", "BLOCK","REAL","NEIRO","WOLF","TRC","FIRE","QI","BEAM","GST","TAP",
-            "AIX","TST","DOMI","WXT","SOLS","GMRT","MTS","CAW","JAM","PIG","PIT","QUBIC","CAD","CLV"
+            "AIX","TST","DOMI","WXT","SOLS","GMRT","MTS","CAW","JAM","PIG","PIT","QUBIC","CAD","CLV",
+            "HOLD","ETH3L","ATOM3L","LTC3S","ATOM3S","LTC3L","BNB3L","XRP3L","SOL3S","DOGE3L",
+            "SUSHI3S","SUSHI3L","BTC3S","DOT3L","BNB3S","LINK3S","ADA3S","DOGE3S","AVAX3S",
+            "NEAR3S","XRP3S","BCH3S","ADA3L","UNI3S","ETH3S","LINK3L","SUI3L","APE3L","SOL3L",
+            "AVAX3L","ARB3L","VET3S","BCH3L","AAVE3L","SUI3S","UNI3L","VET3L","APE3S","MAX","DORA",
+            "RICE"
         })
 
     def fetch_future_tickers(self) -> list[TickerInfo]:

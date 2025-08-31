@@ -7,6 +7,27 @@ from ccxt.base.types import Ticker, MarketInterface, FundingRate, TypedDict
 from src.config.custom_logger import CustomLogger
 
 @dataclass
+class FundingRateInfo:
+    funding_rate: FundingRate
+
+    def get_funding_rate(self) -> float:
+        return self.funding_rate['fundingRate']
+
+    def get_funding_rate_percent(self) -> float:
+        return self.funding_rate['fundingRate'] * 100
+
+    def get_symbol(self) -> str:
+        return self.funding_rate['symbol']
+
+    def get_interval(self) -> str:
+        return self.funding_rate["interval"]
+
+    def get_action_for_collect_funding(self) -> str:
+        if self.funding_rate['fundingRate'] > 0:
+            return "short"
+        return "long"
+
+@dataclass
 class TickerInfo:
     ticker: Ticker
     exchange_name: str
@@ -64,15 +85,30 @@ class CommonConnector(ABC):
         self.allowed_quotes = { 'USDT', 'USDC' }
         self.exclude_base = set()
 
-    def fetch_sorted_funding_rates(self, max_count = 10) -> dict[str, list[FundingRate]] :
-        rates: list[FundingRate] = list(self.fetch_funding_rates().values())
-        top_max = sorted(rates, key=lambda x: x['fundingRate'], reverse=True)[:max_count]
-        top_small = sorted(rates, key=lambda x: x['fundingRate'], reverse=False)[:max_count]
+    def fetch_top_funding_rates(self, max_count = 10) -> dict[str, list[FundingRateInfo]] :
+        rates: list[FundingRateInfo] = self.fetch_funding_rates()
+        top_max = sorted(rates, key=lambda x: x.get_funding_rate(), reverse=True)[:max_count]
+        top_small = sorted(rates, key=lambda x: x.get_funding_rate(), reverse=False)[:max_count]
         return {'max': top_max, 'small': top_small}
 
-    def fetch_funding_rates(self) -> dict[str, FundingRate]:
+    def fetch_funding_rates(self) -> list[FundingRateInfo]:
         symbols = self.load_swap_symbols()
-        return self.get_swap_exchange().fetch_funding_rates(symbols=symbols)
+        rates: dict[str, FundingRate] = self.get_swap_exchange().fetch_funding_rates(symbols=symbols)
+        return [
+            FundingRateInfo(rate)
+            for rate in rates.values()
+        ]
+
+    def fetch_funding_rate_by_base(self, base: str) -> list[FundingRateInfo]:
+        symbols = self.load_swap_symbols_by_base(base)
+        result = []
+        for symbol in symbols:
+            result.append(self.fetch_funding_rate(symbol))
+        return result
+
+    def fetch_funding_rate(self, symbol: str) -> FundingRateInfo:
+        rate: FundingRate = self.get_swap_exchange().fetch_funding_rate(symbol)
+        return FundingRateInfo(rate)
 
     def fetch_future_tickers(self) -> list[TickerInfo]:
         symbols = self.load_future_symbols()
@@ -148,6 +184,14 @@ class CommonConnector(ABC):
             base =  value.get('base', '')
             if (value.get('future', False) or value.get('inverse', False)) and quote in self.get_allowed_quotes() and value.get('active', False) and base not in self.get_exclude_base():
                     symbols.append(value['symbol'])
+        return symbols
+
+    def load_swap_symbols_by_base(self, base: str):
+        symbols = []
+        markets: dict[str, MarketInterface] = self.load_swap_market()
+        for value in markets.values():
+            if value.get('base', '').lower() == base.lower() and value.get('swap', False) and value.get('active', False):
+                symbols.append(value['symbol'])
         return symbols
 
     def load_swap_symbols(self) -> list[str]:

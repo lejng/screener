@@ -23,6 +23,8 @@ pip install -r requirements.txt
 ### 4. How to run
 ```
 python -m src.main_ui
+
+python -m src.main_console
 ```
 
 ### 5. Deactivate virtual env
