@@ -21,8 +21,7 @@ while True:
     print("3 - Show spreads without transferring (spot-swap, spot-futures, swap-swap, all combinations swap and futures)")
     print("4 - Show top fundings")
     print("5 - Show funding by selected coin")
-    print("6 - Show Volume Weighted Average Price for spot coin")
-    print("7 - Show Volume Weighted Average Price for swap coin")
+    print("6 - Show volume weighted average price")
 
     command = input("Enter command: ")
     if command == '1':
@@ -36,6 +35,4 @@ while True:
     if command == '5':
         console_facade.print_funding_rate_by_quote()
     if command == '6':
-        console_facade.print_vmwa_spot()
-    if command == '7':
-        console_facade.print_vmwa_swap()
+        console_facade.print_volume_weighted_average_price()
