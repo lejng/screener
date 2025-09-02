@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from ccxt import Exchange
-from ccxt.base.types import Ticker, MarketInterface, FundingRate, TypedDict
+from ccxt.base.types import Ticker, MarketInterface, FundingRate, OrderBook
 
 from src.config.custom_logger import CustomLogger
 
@@ -110,6 +110,30 @@ class CommonConnector(ABC):
         rate: FundingRate = self.get_swap_exchange().fetch_funding_rate(symbol)
         return FundingRateInfo(rate)
 
+    def fetch_future_ticker(self, symbol: str) -> TickerInfo:
+        ticker: Ticker = self.get_future_exchange().fetch_ticker(symbol=symbol)
+        return self.convert_to_ticker_info(ticker, False, False, True)
+
+    def fetch_future_order_book(self, symbol: str) -> OrderBook:
+        order_book: OrderBook = self.get_future_exchange().fetch_order_book(symbol=symbol, limit=20)
+        return order_book
+
+    def fetch_swap_ticker(self, symbol: str) -> TickerInfo:
+        ticker: Ticker = self.get_swap_exchange().fetch_ticker(symbol=symbol, params={'category': 'swap'})
+        return self.convert_to_ticker_info(ticker, False, True, False)
+
+    def fetch_swap_order_book(self, symbol: str) -> OrderBook:
+        order_book: OrderBook = self.get_swap_exchange().fetch_order_book(symbol=symbol, limit=20, params={'category': 'swap'})
+        return order_book
+
+    def fetch_spot_ticker(self, symbol: str) -> TickerInfo:
+        ticker: Ticker = self.get_spot_exchange().fetch_ticker(symbol=symbol, params={'type': 'spot'})
+        return self.convert_to_ticker_info(ticker, True, False, False)
+
+    def fetch_spot_order_book(self, symbol: str) -> OrderBook:
+        order_book: OrderBook = self.get_spot_exchange().fetch_order_book(symbol=symbol, limit=20, params={'type': 'spot'})
+        return order_book
+
     def fetch_future_tickers(self) -> list[TickerInfo]:
         symbols = self.load_future_symbols()
         tickers: dict[str, Ticker] = self.get_future_exchange().fetch_tickers(symbols=symbols)
@@ -186,14 +210,6 @@ class CommonConnector(ABC):
                     symbols.append(value['symbol'])
         return symbols
 
-    def load_swap_symbols_by_base(self, base: str):
-        symbols = []
-        markets: dict[str, MarketInterface] = self.load_swap_market()
-        for value in markets.values():
-            if value.get('base', '').lower() == base.lower() and value.get('swap', False) and value.get('active', False):
-                symbols.append(value['symbol'])
-        return symbols
-
     def load_swap_symbols(self) -> list[str]:
         symbols = []
         markets: dict[str, MarketInterface] = self.load_swap_market()
@@ -203,6 +219,49 @@ class CommonConnector(ABC):
             if value.get('swap', False) and quote in self.get_allowed_quotes() and value.get('active', False) and base not in self.get_exclude_base():
                     symbols.append(value['symbol'])
         return symbols
+
+    def load_swap_symbols_by_base(self, base: str) -> list[str]:
+        symbols = []
+        markets: dict[str, MarketInterface] = self.load_swap_market()
+        for value in markets.values():
+            if value.get('base', '').lower() == base.lower() and value.get('swap', False) and value.get('active', False):
+                symbols.append(value['symbol'])
+        return symbols
+
+    def load_swap_symbol_by_base_and_quote(self, base: str, quote: str) -> str | None:
+        markets: dict[str, MarketInterface] = self.load_swap_market()
+        for value in markets.values():
+            quote_value = value.get('quote', '')
+            base_value = value.get('base', '')
+            if (base_value.lower() == base.lower()
+                    and quote_value.lower() == quote.lower()
+                    and value.get('swap', False)
+                    and value.get('active', False)):
+                return value['symbol']
+        return None
+
+    def load_spot_symbol_by_base_and_quote(self, base: str, quote: str) -> str | None:
+        markets: dict[str, MarketInterface] = self.load_spot_market()
+        for value in markets.values():
+            quote_value = value.get('quote', '')
+            base_value = value.get('base', '')
+            if (base_value.lower() == base.lower()
+                    and quote_value.lower() == quote.lower()
+                    and value.get('spot', False)):
+                return value['symbol']
+        return None
+
+    def load_future_symbol_by_base_and_quote(self, base: str, quote: str) -> str | None:
+        markets: dict[str, MarketInterface] = self.load_future_market()
+        for value in markets.values():
+            quote_value = value.get('quote', '')
+            base_value = value.get('base', '')
+            if (base_value.lower() == base.lower()
+                    and quote_value.lower() == quote.lower()
+                    and value.get('active', False)
+                    and (value.get('future', False) or value.get('inverse', False))):
+                return value['symbol']
+        return None
 
     def paginate(self, list_data, page_size: int) -> list:
         pages = []

@@ -114,3 +114,33 @@ class ConsoleFacade:
             if connector.get_exchange_name() in exchanges:
                 result.append(connector)
         return result
+
+    def print_vmwa_spot(self):
+        self.common_config.reload_config()
+        exchange = input("Input exchange name: ")
+        base = input("Enter coin name: ")
+        currency = input("Enter currency name: ")
+        amount = float(input("Enter buy/sell amount in currency: "))
+        connector = [connector for connector in self.all_connectors if connector.get_exchange_name() == exchange][0]
+        symbol = connector.load_spot_symbol_by_base_and_quote(base, currency)
+        if symbol is None:
+            print(f"Coin with name {base} and currency {currency} not found")
+            return
+        order_book = connector.fetch_spot_order_book(symbol)
+        vwap_buy, vwap_sell = self.founder.vwap_order_book(order_book, amount)
+        print(f"Coin {symbol} for {amount} buy price: {vwap_buy} or sell price: {vwap_sell}")
+
+    def print_vmwa_swap(self):
+        self.common_config.reload_config()
+        exchange = input("Input exchange name: ")
+        base = input("Enter coin name: ")
+        currency = input("Enter currency name: ")
+        amount = input("Enter buy/sell amount in currency: ")
+        connector = [connector for connector in self.all_connectors if connector.get_exchange_name() == exchange][0]
+        symbol = connector.load_swap_symbol_by_base_and_quote(base, currency)
+        if symbol is None:
+            print(f"Coin with name {base} and currency {currency} not found")
+            return
+        order_book = connector.fetch_swap_order_book(symbol)
+        vwap_buy, vwap_sell = self.founder.vwap_order_book(order_book, amount)
+        print(f"Coin {symbol} for {amount} buy price: {vwap_buy} or sell price: {vwap_sell}")

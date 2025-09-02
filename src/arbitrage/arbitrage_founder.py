@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List, Tuple
+
+from ccxt.base.types import OrderBook, Num
 
 from src.config.custom_logger import CustomLogger
 from src.connectors.common_connector import TickerInfo
@@ -28,7 +30,12 @@ class ArbitrageFounder:
         spread_list_result = []
         for base_currency, value in tickers.items():
             spread_list_result.extend(self.calculate_spreads(value, min_spread, base_currency))
-        return sorted(spread_list_result, key=lambda x: x.spread_percent, reverse=True)
+        spreads: list[SpreadData] = sorted(spread_list_result, key=lambda x: x.spread_percent, reverse=True)
+        filtered_spreads = [
+            item for item in spreads
+            if item.ticker_to_sell.get_sell_price() > item.ticker_to_buy.get_buy_price()
+        ]
+        return filtered_spreads
 
     def calculate_spreads(self, tickers: list[TickerInfo], min_spread: float, base_currency: str) -> list[SpreadData]:
         result: list[SpreadData] = []
@@ -103,3 +110,31 @@ class ArbitrageFounder:
         except TypeError:
             self.logger.log_error(f"Error during spread calculation")
             return 0
+
+    def vwap(self, asks_or_bids: List[List[Num]], amount_in_currency: float) -> float | None:
+        # level[0] - price, level[1] - volume
+        levels = [(level[0], level[1]) for level in asks_or_bids if level[1] > 0]
+        remaining_in_currency = amount_in_currency
+        bought_amount = 0.0
+
+        for price, volume in levels:
+            take_volume = min(volume, remaining_in_currency / price)
+            spent = take_volume * price
+            bought_amount += take_volume
+            remaining_in_currency -= spent
+            if remaining_in_currency <= 0:
+                break
+
+        if remaining_in_currency > 0:
+            self.logger.log_error("Not enough liquidity for this amount")
+            return None
+
+        avg_price = amount_in_currency / bought_amount
+        return avg_price
+
+    # amount it mean in usd or usdt or different quote currency
+    def vwap_order_book(self, order_book: OrderBook, amount_in_currency) -> Tuple[float, float]:
+        vwap_buy = self.vwap(order_book["asks"], amount_in_currency)
+        vwap_sell = self.vwap(order_book["bids"], amount_in_currency)
+
+        return vwap_buy, vwap_sell
