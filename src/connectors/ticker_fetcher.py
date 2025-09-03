@@ -12,19 +12,29 @@ class TickerFetcher:
     def __init__(self):
         self.logger = CustomLogger()
 
-    def fetch_tickers_by_base(self, connectors: list[CommonConnector], base: str) -> list[AggregateTicker]:
+    def fetch_tickers_by_base(self, spot_connectors: list[CommonConnector],
+                              swap_connectors: list[CommonConnector],
+                              futures_connectors: list[CommonConnector],
+                              base: str) -> list[AggregateTicker]:
         self.logger.log_info(f"Fetching ticker by base {base}")
         result: list[AggregateTicker] = []
-        for connector in connectors:
-            spot_symbols = connector.load_spot_symbols_by_base(base)
-            for symbol in spot_symbols:
+        for connector in spot_connectors:
+            symbols = connector.load_spot_symbols_by_base(base)
+            for symbol in symbols:
                 ticker: TickerInfo = connector.fetch_spot_ticker(symbol)
                 order_book: OrderBook = connector.fetch_spot_order_book(symbol)
                 result.append(AggregateTicker(ticker, order_book))
-            swap_symbols = connector.load_swap_symbols_by_base(base)
-            for symbol in swap_symbols:
+        for connector in swap_connectors:
+            symbols = connector.load_swap_symbols_by_base(base)
+            for symbol in symbols:
                 ticker: TickerInfo = connector.fetch_swap_ticker(symbol)
                 order_book: OrderBook = connector.fetch_swap_order_book(symbol)
+                result.append(AggregateTicker(ticker, order_book))
+        for connector in futures_connectors:
+            symbols = connector.load_futures_symbols_by_base(base)
+            for symbol in symbols:
+                ticker: TickerInfo = connector.fetch_future_ticker(symbol)
+                order_book: OrderBook = connector.fetch_future_order_book(symbol)
                 result.append(AggregateTicker(ticker, order_book))
         return result
 

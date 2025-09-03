@@ -123,9 +123,19 @@ class ConsoleFacade:
     def print_volume_weighted_average_price(self):
         self.common_config.reload_config()
         base = input("Enter coin name: ")
-        amount = float(input("Enter buy/sell amount in currency: "))
-        tickers: list[AggregateTicker] = self.ticker_fetcher.fetch_tickers_by_base(self.all_connectors, base)
+        amount_in_quote = self.common_config.get_amount_in_quote()
+        tickers: list[AggregateTicker] = self.ticker_fetcher.fetch_tickers_by_base(
+            self.get_spot_connectors(),
+            self.get_swap_connectors(),
+            self.get_futures_connectors(),
+            base
+        )
         for ticker in tickers:
             ticker_info = ticker.ticker
-            vwap_buy, vwap_sell = ticker.vwap_order_book(amount)
-            print(f"Coin {ticker_info.get_trading_view_name()} for {amount} buy price: {vwap_buy} or sell price: {vwap_sell}")
+            vwap_buy, vwap_sell = ticker.vwap_order_book(amount_in_quote)
+            coins_buy = amount_in_quote / vwap_buy
+            coins_sell = amount_in_quote / vwap_sell
+            line = (f"{ticker_info.get_trading_view_name()}, quote amount: {amount_in_quote}"
+                    f"| buy price: {vwap_buy}, coins to buy: {coins_buy}"
+                    f"| sell price: {vwap_sell}, coins to sell: {coins_sell}")
+            print(line)

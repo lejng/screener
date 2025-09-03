@@ -46,7 +46,7 @@ class CommonConnector(ABC):
         return self.convert_to_ticker_info(ticker, False, False, True)
 
     def fetch_future_order_book(self, symbol: str) -> OrderBook:
-        order_book: OrderBook = self.get_future_exchange().fetch_order_book(symbol=symbol, limit=50)
+        order_book: OrderBook = self.get_future_exchange().fetch_order_book(symbol=symbol, limit=20)
         return order_book
 
     def fetch_swap_ticker(self, symbol: str) -> TickerInfo:
@@ -192,7 +192,7 @@ class CommonConnector(ABC):
         for value in markets.values():
             base_value = value.get('base', '')
             if (base_value.lower() == base.lower()
-                    and value.get('spot', False)
+                    and value.get('active', False)
                     and (value.get('future', False) or value.get('inverse', False))):
                 symbols.append(value['symbol'])
         return symbols

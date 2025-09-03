@@ -11,3 +11,7 @@ exchanges:
   fundings: 'BYBIT,GATEIO,BINANCE'
 
 min_spread: 1
+# Working trade size for arbitrage (in quote currency, e.g. 50 USDT).
+# Note: if you want to trade for 50 USDT, it is safer to set this value 2x higher
+# (e.g. 200 USDT), since real market execution can be worse than ideal calculations.
+amount_in_quote: 100

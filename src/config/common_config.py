@@ -9,6 +9,7 @@ class CommonConfig:
         self.config_file_name: str = config_file_name
         self.config = self.read_config()
         self.default_min_spread: str = "1"
+        self.default_amount_in_quote = "100"
 
     def reload_config(self):
         self.config = self.read_config()
@@ -40,3 +41,9 @@ class CommonConfig:
             return float(self.config["min_spread"] or self.default_min_spread)
         except ValueError:
             return 1
+
+    def get_amount_in_quote(self) -> float:
+        try:
+            return float(self.config["amount_in_quote"] or self.default_amount_in_quote)
+        except ValueError:
+            return 100
