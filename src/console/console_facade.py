@@ -1,7 +1,11 @@
-from src.arbitrage.arbitrage_founder import ArbitrageFounder, SpreadData
+from src.arbitrage.arbitrage_founder import ArbitrageFounder
+from src.arbitrage.data.spread_data import SpreadData
 from src.config.common_config import CommonConfig
-from src.connectors.common_connector import CommonConnector, TickerInfo, FundingRateInfo
-from src.connectors.ticker_fetcher import TickerFetcher, AggregateTicker
+from src.connectors.common_connector import CommonConnector
+from src.connectors.data.aggregate_ticker import AggregateTicker
+from src.connectors.data.funding_rate_info import FundingRateInfo
+from src.connectors.data.ticker_info import TickerInfo
+from src.connectors.ticker_fetcher import TickerFetcher
 
 
 def print_spreads(header: str, spreads: list[SpreadData], min_spread: float):

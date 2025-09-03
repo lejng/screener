@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 import sys
 from PySide6.QtCore import QThread
 
-from src.arbitrage.arbitrage_founder import SpreadData
+from src.arbitrage.data.spread_data import SpreadData
 from src.config.custom_logger import CustomLogger
 from src.connectors.binance_connector import BinanceConnector
 from src.connectors.bybit_connector import BybitConnector

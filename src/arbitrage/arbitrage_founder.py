@@ -1,16 +1,8 @@
-from dataclasses import dataclass
 from typing import Optional
 
+from src.arbitrage.data.spread_data import SpreadData
 from src.config.custom_logger import CustomLogger
-from src.connectors.common_connector import TickerInfo
-
-
-@dataclass
-class SpreadData:
-    ticker_to_buy: TickerInfo
-    ticker_to_sell: TickerInfo
-    spread_percent: float
-    base_currency: str
+from src.connectors.data.ticker_info import TickerInfo
 
 def convert_to_spread_data(ticker_to_buy: TickerInfo, ticker_to_sell: TickerInfo, spread: float, base_currency: str) -> SpreadData:
     return SpreadData(

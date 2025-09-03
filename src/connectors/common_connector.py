@@ -1,81 +1,12 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 
 from ccxt import Exchange
 from ccxt.base.types import Ticker, MarketInterface, FundingRate, OrderBook
 
 from src.config.custom_logger import CustomLogger
+from src.connectors.data.funding_rate_info import FundingRateInfo
+from src.connectors.data.ticker_info import TickerInfo
 
-@dataclass
-class FundingRateInfo:
-    funding_rate: FundingRate
-
-    def get_funding_rate(self) -> float:
-        return self.funding_rate['fundingRate']
-
-    def get_funding_rate_percent(self) -> float:
-        return self.funding_rate['fundingRate'] * 100
-
-    def get_symbol(self) -> str:
-        return self.funding_rate['symbol']
-
-    def get_interval(self) -> str:
-        return self.funding_rate["interval"]
-
-    def get_action_for_collect_funding(self) -> str:
-        if self.funding_rate['fundingRate'] > 0:
-            return "short"
-        return "long"
-
-@dataclass
-class TickerInfo:
-    ticker: Ticker
-    exchange_name: str
-    spot: bool
-    swap: bool
-    future: bool
-    base_currency: str
-    quote_currency: str
-
-    def get_symbol(self) -> str:
-        return self.ticker["symbol"]
-
-    def get_buy_price(self):
-        if self.ticker["ask"] is not None:
-            return self.ticker["ask"]
-        return self.ticker["last"]
-
-    def get_sell_price(self):
-        if self.ticker["bid"] is not None:
-            return self.ticker["bid"]
-        return self.ticker["last"]
-
-    def get_ask(self):
-        return self.ticker["ask"]
-
-    def get_bid(self):
-        return self.ticker["bid"]
-
-    def get_last_price(self):
-        return self.ticker["last"]
-
-    def get_market_type(self) -> str:
-        if self.spot:
-            return "spot"
-        if self.swap:
-            return "swap"
-        if self.future:
-            return "future"
-        return "unknown"
-
-    def get_trading_view_name(self) -> str:
-        if self.spot:
-            return f"{self.exchange_name}:{self.base_currency}{self.quote_currency}"
-        if self.swap:
-            return f"{self.exchange_name}:{self.base_currency}{self.quote_currency}.P"
-        if self.future:
-            return f"{self.exchange_name}:{self.get_symbol()}"
-        return f"{self.exchange_name}:{self.base_currency}{self.quote_currency}.UNKNOWN"
 
 class CommonConnector(ABC):
 
@@ -115,7 +46,7 @@ class CommonConnector(ABC):
         return self.convert_to_ticker_info(ticker, False, False, True)
 
     def fetch_future_order_book(self, symbol: str) -> OrderBook:
-        order_book: OrderBook = self.get_future_exchange().fetch_order_book(symbol=symbol, limit=20)
+        order_book: OrderBook = self.get_future_exchange().fetch_order_book(symbol=symbol, limit=50)
         return order_book
 
     def fetch_swap_ticker(self, symbol: str) -> TickerInfo:

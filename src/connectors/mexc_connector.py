@@ -1,7 +1,9 @@
 import ccxt
 from ccxt import Exchange
 
-from src.connectors.common_connector import CommonConnector, TickerInfo, FundingRateInfo
+from src.connectors.common_connector import CommonConnector
+from src.connectors.data.funding_rate_info import FundingRateInfo
+from src.connectors.data.ticker_info import TickerInfo
 
 
 class MexcConnector(CommonConnector):

@@ -2,7 +2,8 @@ import ccxt
 from ccxt import Exchange
 from ccxt.base.types import Ticker
 
-from src.connectors.common_connector import CommonConnector, TickerInfo
+from src.connectors.common_connector import CommonConnector
+from src.connectors.data.ticker_info import TickerInfo
 
 
 class GateConnector(CommonConnector):

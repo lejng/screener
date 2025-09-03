@@ -1,7 +1,9 @@
 from PySide6.QtCore import QObject, Signal
 
-from src.arbitrage.arbitrage_founder import ArbitrageFounder, SpreadData
-from src.connectors.common_connector import CommonConnector, TickerInfo
+from src.arbitrage.arbitrage_founder import ArbitrageFounder
+from src.arbitrage.data.spread_data import SpreadData
+from src.connectors.common_connector import CommonConnector
+from src.connectors.data.ticker_info import TickerInfo
 from src.connectors.ticker_fetcher import TickerFetcher
 
 

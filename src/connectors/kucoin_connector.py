@@ -1,7 +1,8 @@
 import ccxt
 from ccxt import Exchange
 
-from src.connectors.common_connector import CommonConnector, FundingRateInfo
+from src.connectors.common_connector import CommonConnector
+from src.connectors.data.funding_rate_info import FundingRateInfo
 
 
 class KucoinConnector(CommonConnector):

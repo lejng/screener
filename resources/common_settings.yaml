@@ -5,7 +5,9 @@ exchanges:
   #spot: 'BINANCE,BYBIT,GATEIO,KUCOIN,MEXC'
   #swap: 'BINANCE,BYBIT,GATEIO,KUCOIN,MEXC'
   #futures: 'BINANCE,BYBIT,GATEIO,KUCOIN,MEXC'
-  # for top fundings because for some exchanges fetch funding take a lot of times
+
+  # this property use when we fetch fundings for all tickers for one ticker will be used swap
+  # because for some exchanges it can take a lot time
   fundings: 'BYBIT,GATEIO,BINANCE'
 
 min_spread: 1

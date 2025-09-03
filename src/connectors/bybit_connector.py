@@ -2,7 +2,8 @@ import ccxt
 from ccxt import Exchange
 from ccxt.base.types import Ticker, OrderBook
 
-from src.connectors.common_connector import CommonConnector, TickerInfo
+from src.connectors.common_connector import CommonConnector
+from src.connectors.data.ticker_info import TickerInfo
 
 
 class BybitConnector(CommonConnector):
@@ -29,7 +30,7 @@ class BybitConnector(CommonConnector):
         return self.convert_to_ticker_info(ticker, False, True, False)
 
     def fetch_swap_order_book(self, symbol: str) -> OrderBook:
-        order_book: OrderBook = self.get_swap_exchange().fetch_order_book(symbol=symbol, limit=20,
+        order_book: OrderBook = self.get_swap_exchange().fetch_order_book(symbol=symbol, limit=50,
                                                                           params={'category': 'linear'})
         return order_book
 
