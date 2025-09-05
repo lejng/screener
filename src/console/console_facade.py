@@ -17,11 +17,22 @@ def print_full_spreads_data(spreads: list[SpreadData]):
         sell = spread.ticker_to_sell
         buy_funding = get_funding_line(buy.get_funding_info())
         sell_funding = get_funding_line(sell.get_funding_info())
+        funding_spread_adjustment = calc_funding_spread_adjustment(buy.get_funding_info(), sell.get_funding_info())
+        final_spread = spread.spread_percent + funding_spread_adjustment
         line = (f"{spread.base_currency} :" +
-                f" spread: {spread.spread_percent} buy:" +
+                f" spread: {spread.spread_percent} " +
+                f" spread with funding adjustment: {final_spread} buy:" +
                 f" [{buy.get_trading_view_name()} | price: {buy.get_best_buy_price()} | coins: {buy.get_coins_to_buy()}{buy_funding}], sell:" +
                 f" [{sell.get_trading_view_name()} | price: {sell.get_best_sell_price()} | coins: {sell.get_coins_to_sell()}{sell_funding}]")
         print(line)
+
+def calc_funding_spread_adjustment(to_buy_rate: Optional[FundingRateInfo], to_sell_rate: Optional[FundingRateInfo]) -> float:
+    add_to_spread: float = 0
+    if to_buy_rate:
+        add_to_spread -= to_buy_rate.get_funding_rate_percent()
+    if to_sell_rate:
+        add_to_spread += to_sell_rate.get_funding_rate_percent()
+    return add_to_spread
 
 def get_funding_line(rate: Optional[FundingRateInfo]):
     if rate:
