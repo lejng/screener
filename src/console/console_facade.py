@@ -10,6 +10,30 @@ from src.connectors.data.base_ticker_info import BaseTickerInfo
 from src.connectors.ticker_fetcher import TickerFetcher
 
 
+# ============= Print full spread data (checking order book and funding) =============
+def print_full_spreads_data(spreads: list[SpreadData]):
+    for spread in spreads:
+        buy = spread.ticker_to_buy
+        sell = spread.ticker_to_sell
+        buy_funding = get_funding_line(buy.get_funding_info())
+        sell_funding = get_funding_line(sell.get_funding_info())
+        line = (f"{spread.base_currency} :" +
+                f" spread: {spread.spread_percent} buy:" +
+                f" [{buy.get_trading_view_name()} | price: {buy.get_best_buy_price()} | coins: {buy.get_coins_to_buy()}{buy_funding}], sell:" +
+                f" [{sell.get_trading_view_name()} | price: {sell.get_best_sell_price()} | coins: {sell.get_coins_to_sell()}{sell_funding}]")
+        print(line)
+
+def get_funding_line(rate: Optional[FundingRateInfo]):
+    if rate:
+        return (
+                f"| funding rate: {rate.get_funding_rate_percent()} % ," +
+                f"interval: {rate.get_interval()} ," +
+                f"action: {rate.get_action_for_collect_funding()} "
+        )
+    return ""
+
+
+# ============= Print spreads data (quick search, without order book and funding) =============
 def print_spreads(header: str, spreads: list[SpreadData], min_spread: float):
     print(f"======== {header} [ min spread = {min_spread}] ============")
     for spread_info in spreads:
@@ -24,6 +48,7 @@ def print_spread(spread: SpreadData):
             f" [{sell.get_trading_view_name()}|{sell.get_best_sell_price()}]")
     print(line)
 
+# ============= Print funding =============
 def print_top_rates(exchange_name: str, top_rates: dict[str, list[FundingRateInfo]]):
     print(f"======== Top funding rates for exchange {exchange_name} ============")
     space = "     "
@@ -40,6 +65,15 @@ def print_rate(rate: FundingRateInfo, space: str):
             f"interval: {rate.get_interval()} ," +
             f"action: {rate.get_action_for_collect_funding()} ")
     print(line)
+
+# ============= Utils methods =============
+# remove situation where buy futures/swap and sell spot, because usually impossible open short spot position
+def filter_wrong_pairs(spreads: list[SpreadData]) -> list[SpreadData]:
+     return [
+        item for item in spreads
+        if not (item.ticker_to_sell.spot
+                and (item.ticker_to_buy.swap or item.ticker_to_buy.future))
+    ]
 
 class ConsoleFacade:
 
@@ -73,11 +107,7 @@ class ConsoleFacade:
     def print_all_spreads(self):
         spreads: list[SpreadData] = self.find_spreads()
         # remove situation where buy futures/swap and sell spot, because usually impossible open short spot position
-        filtered_spreads = [
-            item for item in spreads
-            if not (item.ticker_to_sell.spot
-                    and (item.ticker_to_buy.swap or item.ticker_to_buy.future))
-        ]
+        filtered_spreads = filter_wrong_pairs(spreads)
         print_spreads("All arbitrage situations", filtered_spreads, self.common_config.get_min_spread())
 
     def print_spreads_without_transfer(self):
@@ -134,28 +164,5 @@ class ConsoleFacade:
             amount_in_quote
         )
         spreads :list[SpreadData] = self.founder.calculate_spreads(tickers, 0.1, base)
-        # remove situation where buy futures/swap and sell spot, because usually impossible open short spot position
-        filtered_spreads = [
-            item for item in spreads
-            if not (item.ticker_to_sell.spot
-                    and (item.ticker_to_buy.swap or item.ticker_to_buy.future))
-        ]
-        for spread in filtered_spreads:
-            buy = spread.ticker_to_buy
-            sell = spread.ticker_to_sell
-            buy_funding = self.get_funding_line(buy.get_funding_info())
-            sell_funding = self.get_funding_line(sell.get_funding_info())
-            line = (f"{spread.base_currency} :" +
-                    f" spread: {spread.spread_percent} buy:" +
-                    f" [{buy.get_trading_view_name()} | price: {buy.get_best_buy_price()} | coins: {buy.get_coins_to_buy()}{buy_funding}], sell:" +
-                    f" [{sell.get_trading_view_name()} | price: {sell.get_best_sell_price()} | coins: {sell.get_coins_to_sell()}{sell_funding}]")
-            print(line)
-
-    def get_funding_line(self, rate: Optional[FundingRateInfo]):
-        if rate:
-            return (
-                    f"| funding rate: {rate.get_funding_rate_percent()} % ," +
-                    f"interval: {rate.get_interval()} ," +
-                    f"action: {rate.get_action_for_collect_funding()} "
-            )
-        return ""
+        filtered_spreads = filter_wrong_pairs(spreads)
+        print_full_spreads_data(filtered_spreads)
