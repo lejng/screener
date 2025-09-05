@@ -46,7 +46,7 @@ class CommonConnector(ABC):
         return self.convert_to_ticker_info(ticker, False, False, True)
 
     def fetch_future_order_book(self, symbol: str) -> OrderBook:
-        order_book: OrderBook = self.get_future_exchange().fetch_order_book(symbol=symbol, limit=20)
+        order_book: OrderBook = self.get_future_exchange().fetch_order_book(symbol=symbol, limit=50)
         return order_book
 
     def fetch_swap_ticker(self, symbol: str) -> BaseTickerInfo:
@@ -54,7 +54,7 @@ class CommonConnector(ABC):
         return self.convert_to_ticker_info(ticker, False, True, False)
 
     def fetch_swap_order_book(self, symbol: str) -> OrderBook:
-        order_book: OrderBook = self.get_swap_exchange().fetch_order_book(symbol=symbol, limit=20, params={'category': 'swap'})
+        order_book: OrderBook = self.get_swap_exchange().fetch_order_book(symbol=symbol, limit=50, params={'category': 'swap'})
         return order_book
 
     def fetch_spot_ticker(self, symbol: str) -> BaseTickerInfo:
@@ -62,7 +62,7 @@ class CommonConnector(ABC):
         return self.convert_to_ticker_info(ticker, True, False, False)
 
     def fetch_spot_order_book(self, symbol: str) -> OrderBook:
-        order_book: OrderBook = self.get_spot_exchange().fetch_order_book(symbol=symbol, limit=20, params={'type': 'spot'})
+        order_book: OrderBook = self.get_spot_exchange().fetch_order_book(symbol=symbol, limit=50, params={'type': 'spot'})
         return order_book
 
     def fetch_future_tickers(self) -> list[BaseTickerInfo]:

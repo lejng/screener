@@ -1,5 +1,6 @@
 import ccxt
 from ccxt import Exchange
+from ccxt.base.types import OrderBook
 
 from src.connectors.common_connector import CommonConnector
 from src.connectors.data.funding_rate_info import FundingRateInfo
@@ -25,6 +26,18 @@ class KucoinConnector(CommonConnector):
             "AVAX3L", "ARB3L", "VET3S", "BCH3L", "AAVE3L", "SUI3S", "UNI3L", "VET3L", "APE3S", "BROCCOLI",
             "BLOCK","LAYER","TST", "ARC"
         })
+
+    def fetch_future_order_book(self, symbol: str) -> OrderBook:
+        order_book: OrderBook = self.get_future_exchange().fetch_order_book(symbol=symbol, limit=100)
+        return order_book
+
+    def fetch_swap_order_book(self, symbol: str) -> OrderBook:
+        order_book: OrderBook = self.get_swap_exchange().fetch_order_book(symbol=symbol, limit=100, params={'category': 'swap'})
+        return order_book
+
+    def fetch_spot_order_book(self, symbol: str) -> OrderBook:
+        order_book: OrderBook = self.get_spot_exchange().fetch_order_book(symbol=symbol, limit=100, params={'type': 'spot'})
+        return order_book
 
     def fetch_funding_rates(self) -> list[FundingRateInfo]:
         symbols = self.load_swap_symbols()
