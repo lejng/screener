@@ -2,6 +2,7 @@ from src.connectors.binance_connector import BinanceConnector
 from src.connectors.bybit_connector import BybitConnector
 from src.connectors.common_connector import CommonConnector
 from src.connectors.gate_connector import GateConnector
+from src.connectors.hyperliquid_connector import HyperliquidConnector
 from src.connectors.kucoin_connector import KucoinConnector
 from src.connectors.mexc_connector import MexcConnector
 from src.console.console_facade import ConsoleFacade
@@ -11,7 +12,8 @@ all_connectors: list[CommonConnector] = [
         GateConnector(),
         MexcConnector(),
         BinanceConnector(),
-        KucoinConnector()
+        KucoinConnector(),
+        HyperliquidConnector()
     ]
 
 console_facade = ConsoleFacade(all_connectors)
