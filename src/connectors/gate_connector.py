@@ -3,7 +3,7 @@ from ccxt import Exchange
 from ccxt.base.types import Ticker
 
 from src.connectors.common_connector import CommonConnector
-from src.connectors.data.ticker_info import TickerInfo
+from src.connectors.data.base_ticker_info import BaseTickerInfo
 
 
 class GateConnector(CommonConnector):
@@ -23,9 +23,9 @@ class GateConnector(CommonConnector):
             "RICE"
         })
 
-    def fetch_future_tickers(self) -> list[TickerInfo]:
+    def fetch_future_tickers(self) -> list[BaseTickerInfo]:
         symbols = self.load_future_symbols()
-        tickers: list[TickerInfo] = []
+        tickers: list[BaseTickerInfo] = []
         for symbol in symbols:
             ticker: Ticker = self.get_future_exchange().fetch_ticker(symbol=symbol)
             tickers.append(self.convert_to_ticker_info(ticker, False, False, True))

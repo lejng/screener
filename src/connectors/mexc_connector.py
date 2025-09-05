@@ -3,7 +3,7 @@ from ccxt import Exchange
 
 from src.connectors.common_connector import CommonConnector
 from src.connectors.data.funding_rate_info import FundingRateInfo
-from src.connectors.data.ticker_info import TickerInfo
+from src.connectors.data.base_ticker_info import BaseTickerInfo
 
 
 class MexcConnector(CommonConnector):
@@ -24,7 +24,7 @@ class MexcConnector(CommonConnector):
             result.append(self.fetch_funding_rate(symbol))
         return result
 
-    def fetch_future_tickers(self) -> list[TickerInfo]:
+    def fetch_future_tickers(self) -> list[BaseTickerInfo]:
         return []
 
     def get_swap_exchange(self) -> Exchange:

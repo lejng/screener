@@ -1,10 +1,12 @@
+from typing import Optional
+
 from src.arbitrage.arbitrage_founder import ArbitrageFounder
 from src.arbitrage.data.spread_data import SpreadData
 from src.config.common_config import CommonConfig
 from src.connectors.common_connector import CommonConnector
-from src.connectors.data.aggregate_ticker import AggregateTicker
+from src.connectors.data.full_ticker_info import FullTickerInfo
 from src.connectors.data.funding_rate_info import FundingRateInfo
-from src.connectors.data.ticker_info import TickerInfo
+from src.connectors.data.base_ticker_info import BaseTickerInfo
 from src.connectors.ticker_fetcher import TickerFetcher
 
 
@@ -18,8 +20,8 @@ def print_spread(spread: SpreadData):
     sell = spread.ticker_to_sell
     line = (f"{spread.base_currency} :" +
             f" {spread.spread_percent} buy:" +
-            f" [{buy.get_trading_view_name()}|{buy.get_buy_price()}], sell:" +
-            f" [{sell.get_trading_view_name()}|{sell.get_sell_price()}]")
+            f" [{buy.get_trading_view_name()}|{buy.get_best_buy_price()}], sell:" +
+            f" [{sell.get_trading_view_name()}|{sell.get_best_sell_price()}]")
     print(line)
 
 def print_top_rates(exchange_name: str, top_rates: dict[str, list[FundingRateInfo]]):
@@ -47,7 +49,7 @@ class ConsoleFacade:
         self.founder = ArbitrageFounder()
         self.all_connectors = all_connectors
 
-    def print_funding_rate_by_quote(self):
+    def print_funding_rate_for_coin(self):
         base = input("Enter coin name (base currency): ")
         self.common_config.read_config()
         connectors = self.get_swap_connectors()
@@ -89,7 +91,7 @@ class ConsoleFacade:
 
     def find_spreads(self) -> list[SpreadData]:
         self.common_config.reload_config()
-        tickers: dict[str, list[TickerInfo]] = self.ticker_fetcher.fetch_tickers_in_parallel(
+        tickers: dict[str, list[BaseTickerInfo]] = self.ticker_fetcher.fetch_tickers_in_parallel(
             self.get_spot_connectors(),
             self.get_swap_connectors(),
             self.get_futures_connectors()
@@ -120,22 +122,40 @@ class ConsoleFacade:
                 result.append(connector)
         return result
 
-    def print_volume_weighted_average_price(self):
+    def print_spread_for_coin(self):
         self.common_config.reload_config()
         base = input("Enter coin name: ")
         amount_in_quote = self.common_config.get_amount_in_quote()
-        tickers: list[AggregateTicker] = self.ticker_fetcher.fetch_tickers_by_base(
+        tickers: list[FullTickerInfo] = self.ticker_fetcher.fetch_tickers_by_base(
             self.get_spot_connectors(),
             self.get_swap_connectors(),
             self.get_futures_connectors(),
-            base
+            base,
+            amount_in_quote
         )
-        for ticker in tickers:
-            ticker_info = ticker.ticker
-            vwap_buy, vwap_sell = ticker.vwap_order_book(amount_in_quote)
-            coins_buy = amount_in_quote / vwap_buy
-            coins_sell = amount_in_quote / vwap_sell
-            line = (f"{ticker_info.get_trading_view_name()}, quote amount: {amount_in_quote}"
-                    f"| buy price: {vwap_buy}, coins to buy: {coins_buy}"
-                    f"| sell price: {vwap_sell}, coins to sell: {coins_sell}")
+        spreads :list[SpreadData] = self.founder.calculate_spreads(tickers, 0.1, base)
+        # remove situation where buy futures/swap and sell spot, because usually impossible open short spot position
+        filtered_spreads = [
+            item for item in spreads
+            if not (item.ticker_to_sell.spot
+                    and (item.ticker_to_buy.swap or item.ticker_to_buy.future))
+        ]
+        for spread in filtered_spreads:
+            buy = spread.ticker_to_buy
+            sell = spread.ticker_to_sell
+            buy_funding = self.get_funding_line(buy.get_funding_info())
+            sell_funding = self.get_funding_line(sell.get_funding_info())
+            line = (f"{spread.base_currency} :" +
+                    f" spread: {spread.spread_percent} buy:" +
+                    f" [{buy.get_trading_view_name()} | price: {buy.get_best_buy_price()} | coins: {buy.get_coins_to_buy()}{buy_funding}], sell:" +
+                    f" [{sell.get_trading_view_name()} | price: {sell.get_best_sell_price()} | coins: {sell.get_coins_to_sell()}{sell_funding}]")
             print(line)
+
+    def get_funding_line(self, rate: Optional[FundingRateInfo]):
+        if rate:
+            return (
+                    f"| funding rate: {rate.get_funding_rate_percent()} % ," +
+                    f"interval: {rate.get_interval()} ," +
+                    f"action: {rate.get_action_for_collect_funding()} "
+            )
+        return ""

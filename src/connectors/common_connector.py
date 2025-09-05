@@ -5,7 +5,7 @@ from ccxt.base.types import Ticker, MarketInterface, FundingRate, OrderBook
 
 from src.config.custom_logger import CustomLogger
 from src.connectors.data.funding_rate_info import FundingRateInfo
-from src.connectors.data.ticker_info import TickerInfo
+from src.connectors.data.base_ticker_info import BaseTickerInfo
 
 
 class CommonConnector(ABC):
@@ -41,7 +41,7 @@ class CommonConnector(ABC):
         rate: FundingRate = self.get_swap_exchange().fetch_funding_rate(symbol)
         return FundingRateInfo(rate)
 
-    def fetch_future_ticker(self, symbol: str) -> TickerInfo:
+    def fetch_future_ticker(self, symbol: str) -> BaseTickerInfo:
         ticker: Ticker = self.get_future_exchange().fetch_ticker(symbol=symbol)
         return self.convert_to_ticker_info(ticker, False, False, True)
 
@@ -49,7 +49,7 @@ class CommonConnector(ABC):
         order_book: OrderBook = self.get_future_exchange().fetch_order_book(symbol=symbol, limit=20)
         return order_book
 
-    def fetch_swap_ticker(self, symbol: str) -> TickerInfo:
+    def fetch_swap_ticker(self, symbol: str) -> BaseTickerInfo:
         ticker: Ticker = self.get_swap_exchange().fetch_ticker(symbol=symbol, params={'category': 'swap'})
         return self.convert_to_ticker_info(ticker, False, True, False)
 
@@ -57,7 +57,7 @@ class CommonConnector(ABC):
         order_book: OrderBook = self.get_swap_exchange().fetch_order_book(symbol=symbol, limit=20, params={'category': 'swap'})
         return order_book
 
-    def fetch_spot_ticker(self, symbol: str) -> TickerInfo:
+    def fetch_spot_ticker(self, symbol: str) -> BaseTickerInfo:
         ticker: Ticker = self.get_spot_exchange().fetch_ticker(symbol=symbol, params={'type': 'spot'})
         return self.convert_to_ticker_info(ticker, True, False, False)
 
@@ -65,7 +65,7 @@ class CommonConnector(ABC):
         order_book: OrderBook = self.get_spot_exchange().fetch_order_book(symbol=symbol, limit=20, params={'type': 'spot'})
         return order_book
 
-    def fetch_future_tickers(self) -> list[TickerInfo]:
+    def fetch_future_tickers(self) -> list[BaseTickerInfo]:
         symbols = self.load_future_symbols()
         tickers: dict[str, Ticker] = self.get_future_exchange().fetch_tickers(symbols=symbols)
         return [
@@ -73,7 +73,7 @@ class CommonConnector(ABC):
             for ticker in tickers.values()
         ]
 
-    def fetch_swap_tickers(self) -> list[TickerInfo]:
+    def fetch_swap_tickers(self) -> list[BaseTickerInfo]:
         symbols = self.load_swap_symbols()
         tickers: dict[str, Ticker] = self.get_swap_exchange().fetch_tickers(symbols=symbols, params={'category': 'swap'})
         return [
@@ -81,7 +81,7 @@ class CommonConnector(ABC):
             for ticker in tickers.values()
         ]
 
-    def fetch_spot_tickers(self) -> list[TickerInfo]:
+    def fetch_spot_tickers(self) -> list[BaseTickerInfo]:
         symbols: list[str] = self.load_spot_symbols()
         tickers: dict[str, Ticker] = self.get_spot_exchange().fetch_tickers(symbols=symbols, params={'type': 'spot'})
         return [
@@ -89,9 +89,9 @@ class CommonConnector(ABC):
             for ticker in tickers.values()
         ]
 
-    def convert_to_ticker_info(self, ticker: Ticker, spot: bool, swap: bool, future: bool) -> TickerInfo:
+    def convert_to_ticker_info(self, ticker: Ticker, spot: bool, swap: bool, future: bool) -> BaseTickerInfo:
         base, quote = self.parse_symbol(ticker)
-        return TickerInfo(
+        return BaseTickerInfo(
             ticker=ticker,
             exchange_name=self.get_exchange_name(),
             spot=spot,

@@ -1,10 +1,13 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from ccxt.base.types import Ticker
 
+from src.connectors.data.funding_rate_info import FundingRateInfo
+
 
 @dataclass
-class TickerInfo:
+class BaseTickerInfo:
     ticker: Ticker
     exchange_name: str
     spot: bool
@@ -16,24 +19,20 @@ class TickerInfo:
     def get_symbol(self) -> str:
         return self.ticker["symbol"]
 
-    def get_buy_price(self):
-        if self.ticker["ask"] is not None:
-            return self.ticker["ask"]
-        return self.ticker["last"]
+    def get_best_buy_price(self) -> Optional[float]:
+        return self.ticker.get("ask") or self.ticker.get("last")
 
-    def get_sell_price(self):
-        if self.ticker["bid"] is not None:
-            return self.ticker["bid"]
-        return self.ticker["last"]
+    def get_best_sell_price(self) -> Optional[float]:
+        return self.ticker.get("bid") or self.ticker.get("last")
 
-    def get_ask(self):
-        return self.ticker["ask"]
+    def get_coins_to_buy(self) -> Optional[float]:
+        return None
 
-    def get_bid(self):
-        return self.ticker["bid"]
+    def get_coins_to_sell(self) -> Optional[float]:
+        return None
 
-    def get_last_price(self):
-        return self.ticker["last"]
+    def get_funding_info(self) -> Optional[FundingRateInfo]:
+        return None
 
     def get_market_type(self) -> str:
         if self.spot:

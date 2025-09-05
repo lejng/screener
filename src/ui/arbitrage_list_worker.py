@@ -3,7 +3,7 @@ from PySide6.QtCore import QObject, Signal
 from src.arbitrage.arbitrage_founder import ArbitrageFounder
 from src.arbitrage.data.spread_data import SpreadData
 from src.connectors.common_connector import CommonConnector
-from src.connectors.data.ticker_info import TickerInfo
+from src.connectors.data.base_ticker_info import BaseTickerInfo
 from src.connectors.ticker_fetcher import TickerFetcher
 
 
@@ -19,6 +19,6 @@ class ArbitrageListWorker(QObject):
         self.ticker_fetcher = TickerFetcher()
 
     def run(self):
-        tickers: dict[str, list[TickerInfo]] = self.ticker_fetcher.fetch_tickers_in_parallel(self.spot_connectors, self.swap_connectors, [])
+        tickers: dict[str, list[BaseTickerInfo]] = self.ticker_fetcher.fetch_tickers_in_parallel(self.spot_connectors, self.swap_connectors, [])
         spreads: list[SpreadData] = self.arbitrage_founder.find_arbitrage(tickers, self.min_spread)
         self.finished.emit(spreads)

@@ -3,7 +3,7 @@ from ccxt import Exchange
 from ccxt.base.types import Ticker, OrderBook
 
 from src.connectors.common_connector import CommonConnector
-from src.connectors.data.ticker_info import TickerInfo
+from src.connectors.data.base_ticker_info import BaseTickerInfo
 
 
 class BinanceConnector(CommonConnector):
@@ -15,7 +15,7 @@ class BinanceConnector(CommonConnector):
         self.future_exchange = ccxt.binanceusdm()
         self.set_exclude_base(set())
 
-    def fetch_spot_ticker(self, symbol: str) -> TickerInfo:
+    def fetch_spot_ticker(self, symbol: str) -> BaseTickerInfo:
         ticker: Ticker = self.get_spot_exchange().fetch_ticker(symbol=symbol)
         return self.convert_to_ticker_info(ticker, True, False, False)
 
@@ -23,7 +23,7 @@ class BinanceConnector(CommonConnector):
         order_book: OrderBook = self.get_spot_exchange().fetch_order_book(symbol=symbol, limit=50)
         return order_book
 
-    def fetch_spot_tickers(self) -> list[TickerInfo]:
+    def fetch_spot_tickers(self) -> list[BaseTickerInfo]:
         symbols: list[str] = self.load_spot_symbols()
         symbol_pages: list[list[str]] = self.paginate(symbols, 400)
         tickers: dict[str, Ticker] = {}

@@ -134,9 +134,9 @@ class ArbitrageUI(QWidget):
         for index, spread in enumerate(self.spreads):
             self.table.setItem(index, 0, QTableWidgetItem(spread.base_currency))
             self.table.setItem(index, 1, QTableWidgetItem(spread.ticker_to_buy.get_trading_view_name()))
-            self.table.setItem(index, 2, QTableWidgetItem(spread.ticker_to_buy.get_buy_price().__str__()))
+            self.table.setItem(index, 2, QTableWidgetItem(spread.ticker_to_buy.get_best_buy_price().__str__()))
             self.table.setItem(index, 3, QTableWidgetItem(spread.ticker_to_sell.get_trading_view_name()))
-            self.table.setItem(index, 4, QTableWidgetItem(spread.ticker_to_sell.get_sell_price().__str__()))
+            self.table.setItem(index, 4, QTableWidgetItem(spread.ticker_to_sell.get_best_sell_price().__str__()))
             self.table.setItem(index, 5, QTableWidgetItem(spread.spread_percent.__str__()))
             self.table.setItem(index, 6, QTableWidgetItem("Open"))
 

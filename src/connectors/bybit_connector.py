@@ -3,7 +3,7 @@ from ccxt import Exchange
 from ccxt.base.types import Ticker, OrderBook
 
 from src.connectors.common_connector import CommonConnector
-from src.connectors.data.ticker_info import TickerInfo
+from src.connectors.data.base_ticker_info import BaseTickerInfo
 
 
 class BybitConnector(CommonConnector):
@@ -17,7 +17,7 @@ class BybitConnector(CommonConnector):
             "NEIRO","TRC"
         })
 
-    def fetch_swap_tickers(self) -> list[TickerInfo]:
+    def fetch_swap_tickers(self) -> list[BaseTickerInfo]:
         symbols = self.load_swap_symbols()
         tickers: dict[str, Ticker] = self.get_swap_exchange().fetch_tickers(symbols=symbols, params={'category': 'linear'})
         return [
@@ -25,7 +25,7 @@ class BybitConnector(CommonConnector):
             for ticker in tickers.values()
         ]
 
-    def fetch_swap_ticker(self, symbol: str) -> TickerInfo:
+    def fetch_swap_ticker(self, symbol: str) -> BaseTickerInfo:
         ticker: Ticker = self.get_swap_exchange().fetch_ticker(symbol=symbol, params={'category': 'linear'})
         return self.convert_to_ticker_info(ticker, False, True, False)
 
