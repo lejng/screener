@@ -19,12 +19,10 @@ def print_full_spreads_data(spreads: list[SpreadData]):
         sell_funding = get_funding_line(sell.get_funding_info())
         funding_spread_adjustment = spread.get_funding_spread_adjustment()
         final_spread = spread.spread_percent + funding_spread_adjustment
-        line = (f"{spread.base_currency} :" +
-                f" spread: {spread.spread_percent} " +
-                f" spread with funding adjustment: {final_spread} buy:" +
-                f" [{buy.get_trading_view_name()} | price: {buy.get_best_buy_price()} | coins: {buy.get_coins_to_buy()}{buy_funding}], sell:" +
-                f" [{sell.get_trading_view_name()} | price: {sell.get_best_sell_price()} | coins: {sell.get_coins_to_sell()}{sell_funding}]")
-        print(line)
+        space = "          "
+        print(f"{spread.base_currency} : spread: {spread.spread_percent}, spread with funding adjustment: {final_spread}")
+        print(f"{space} buy:  [{buy.get_trading_view_name()} | price: {buy.get_best_buy_price()} | coins: {buy.get_coins_to_buy()}{buy_funding}]")
+        print(f"{space} sell: [{sell.get_trading_view_name()} | price: {sell.get_best_sell_price()} | coins: {sell.get_coins_to_sell()}{sell_funding}]")
 
 def get_funding_line(rate: Optional[FundingRateInfo]):
     if rate:
@@ -34,7 +32,6 @@ def get_funding_line(rate: Optional[FundingRateInfo]):
                 f"action: {rate.get_action_for_collect_funding()} "
         )
     return ""
-
 
 # ============= Print spreads data (quick search, without order book and funding) =============
 def print_spreads(header: str, spreads: list[SpreadData], min_spread: float):
@@ -89,12 +86,23 @@ class ConsoleFacade:
     def print_funding_rate_for_coin(self):
         base = input("Enter coin name (base currency): ")
         self.common_config.read_config()
-        connectors = self.get_swap_connectors()
-        for connector in connectors:
-            print(f"======== Funding rates for exchange {connector.get_exchange_name()} ============")
-            rates: list[FundingRateInfo] = connector.fetch_funding_rate_by_base(base)
-            for rate in rates:
-                print_rate(rate, "")
+        amount_in_quote = self.common_config.get_amount_in_quote()
+        tickers: list[FullTickerInfo] = self.ticker_fetcher.fetch_tickers_by_base(
+            [],
+            self.get_swap_connectors(),
+            [],
+            base,
+            amount_in_quote
+        )
+        for ticker in tickers:
+            funding_info = ticker.get_funding_info()
+            print(f"{ticker.get_trading_view_name()} "
+                  f"| rate: {funding_info.get_funding_rate_percent()} % ," +
+                  f"interval: {funding_info.get_interval()} ," +
+                  f"action: {funding_info.get_action_for_collect_funding()} "
+                  f"| best_buy_price: {ticker.get_best_buy_price()} "
+                  f"| best_sell_price: {ticker.get_best_sell_price()} "
+                  f"| coins: {ticker.get_coins_to_buy()}]")
 
     def print_top_funding_rates(self):
         self.common_config.read_config()
@@ -112,6 +120,21 @@ class ConsoleFacade:
         # remove situation where buy futures/swap and sell spot, because usually impossible open short spot position
         filtered_spreads = filter_wrong_pairs(spreads)
         print_spreads("All arbitrage situations", filtered_spreads, self.common_config.get_min_spread())
+
+    def print_spread_for_coin(self):
+        self.common_config.reload_config()
+        base = input("Enter coin name: ")
+        amount_in_quote = self.common_config.get_amount_in_quote()
+        tickers: list[FullTickerInfo] = self.ticker_fetcher.fetch_tickers_by_base(
+            self.get_spot_connectors(),
+            self.get_swap_connectors(),
+            self.get_futures_connectors(),
+            base,
+            amount_in_quote
+        )
+        spreads :list[SpreadData] = self.founder.calculate_spreads(tickers, 0.005, base)
+        filtered_spreads = filter_wrong_pairs(sorted(spreads, key=lambda x: x.spread_percent, reverse=True))
+        print_full_spreads_data(filtered_spreads)
 
     def print_spreads_without_transfer(self):
         spreads: list[SpreadData] = self.find_spreads()
@@ -154,18 +177,3 @@ class ConsoleFacade:
             if connector.get_exchange_name() in exchanges:
                 result.append(connector)
         return result
-
-    def print_spread_for_coin(self):
-        self.common_config.reload_config()
-        base = input("Enter coin name: ")
-        amount_in_quote = self.common_config.get_amount_in_quote()
-        tickers: list[FullTickerInfo] = self.ticker_fetcher.fetch_tickers_by_base(
-            self.get_spot_connectors(),
-            self.get_swap_connectors(),
-            self.get_futures_connectors(),
-            base,
-            amount_in_quote
-        )
-        spreads :list[SpreadData] = self.founder.calculate_spreads(tickers, 0.1, base)
-        filtered_spreads = filter_wrong_pairs(spreads)
-        print_full_spreads_data(filtered_spreads)
