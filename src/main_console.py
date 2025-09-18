@@ -34,7 +34,7 @@ while True:
         if command == '3':
             console_facade.print_spreads_without_transfer()
         if command == '4':
-            console_facade.print_spread_for_coin()
+            console_facade.print_spread_for_entered_coin()
         if command == '5':
             console_facade.print_top_funding_rates()
         if command == '6':

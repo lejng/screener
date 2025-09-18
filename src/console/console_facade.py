@@ -121,9 +121,13 @@ class ConsoleFacade:
         filtered_spreads = filter_wrong_pairs(spreads)
         print_spreads("All arbitrage situations", filtered_spreads, self.common_config.get_min_spread())
 
-    def print_spread_for_coin(self):
+    def print_spread_for_entered_coin(self):
         self.common_config.reload_config()
         base = input("Enter coin name: ")
+        min_spread = 0.005
+        self.print_spread_for_coin(base, min_spread)
+
+    def print_spread_for_coin(self, base: str, min_spread: float):
         amount_in_quote = self.common_config.get_amount_in_quote()
         tickers: list[FullTickerInfo] = self.ticker_fetcher.fetch_tickers_by_base(
             self.get_spot_connectors(),
@@ -132,7 +136,7 @@ class ConsoleFacade:
             base,
             amount_in_quote
         )
-        spreads :list[SpreadData] = self.founder.calculate_spreads(tickers, 0.005, base)
+        spreads :list[SpreadData] = self.founder.calculate_spreads(tickers, min_spread, base)
         filtered_spreads = filter_wrong_pairs(sorted(spreads, key=lambda x: x.spread_percent, reverse=True))
         print_full_spreads_data(filtered_spreads)
 
