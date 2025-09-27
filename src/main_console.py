@@ -1,22 +1,38 @@
-from src.connectors.binance_connector import BinanceConnector
-from src.connectors.bybit_connector import BybitConnector
-from src.connectors.common_connector import CommonConnector
-from src.connectors.gate_connector import GateConnector
-from src.connectors.hyperliquid_connector import HyperliquidConnector
-from src.connectors.kucoin_connector import KucoinConnector
-from src.connectors.mexc_connector import MexcConnector
+from src.connectors.future.bybit_future_connector import BybitFutureConnector
+from src.connectors.future.future_common_connector import FutureCommonConnector
+from src.connectors.future.gate_future_connector import GateFutureConnector
+from src.connectors.spot.bybit_spot_connector import BybitSpotConnector
+from src.connectors.spot.gate_spot_connector import GateSpotConnector
+from src.connectors.spot.kucoin_spot_connector import KucoinSpotConnector
+from src.connectors.spot.spot_common_connector import SpotCommonConnector
+from src.connectors.swap.bybit_swap_connector import BybitSwapConnector
+from src.connectors.swap.gate_swap_connector import GateSwapConnector
+from src.connectors.swap.hyperliquid_swap_connector import HyperliquidSwapConnector
+from src.connectors.swap.kucoin_swap_connector import KucoinSwapConnector
+from src.connectors.swap.paradex_swap_connector import ParadexSwapConnector
+from src.connectors.swap.swap_common_connector import SwapCommonConnector
 from src.console.console_facade import ConsoleFacade
 
-all_connectors: list[CommonConnector] = [
-        BybitConnector(),
-        GateConnector(),
-        MexcConnector(),
-        BinanceConnector(),
-        KucoinConnector(),
-        HyperliquidConnector()
+all_spot_connectors: list[SpotCommonConnector] = [
+        BybitSpotConnector(),
+        GateSpotConnector(),
+        KucoinSpotConnector()
     ]
 
-console_facade = ConsoleFacade(all_connectors)
+all_swap_connectors: list[SwapCommonConnector] = [
+        BybitSwapConnector(),
+        GateSwapConnector(),
+        KucoinSwapConnector(),
+        HyperliquidSwapConnector(),
+        ParadexSwapConnector()
+    ]
+
+all_futures_connectors: list[FutureCommonConnector] = [
+        BybitFutureConnector(),
+        GateFutureConnector()
+    ]
+
+console_facade = ConsoleFacade(all_spot_connectors, all_swap_connectors, all_futures_connectors)
 while True:
     print("1 - Exit")
     print("2 - Show all types of spreads (spot-spot, spot-swap, spot-futures, swap-swap, all combinations swap and futures)")
