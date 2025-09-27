@@ -15,9 +15,11 @@ create:
 python -m venv .venv
 ```
 
-### 3. Install dependencies
+### 3. Install/remove dependencies
 ```
 pip install -r requirements.txt
+
+pip uninstall -r requirements.txt
 ```
 
 ### 4. How to run

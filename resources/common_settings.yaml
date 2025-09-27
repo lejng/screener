@@ -1,10 +1,10 @@
 exchanges:
-  spot: 'BYBIT,GATEIO,KUCOIN,MEXC'
-  swap: 'BYBIT,GATEIO,KUCOIN,MEXC,HYPERLIQUID'
+  spot: 'BYBIT,GATEIO,KUCOIN'
+  swap: 'BYBIT,GATEIO,KUCOIN,HYPERLIQUID,PARADEX'
   futures: ''
-  #spot: 'BINANCE,BYBIT,GATEIO,KUCOIN,MEXC'
-  #swap: 'BINANCE,BYBIT,GATEIO,KUCOIN,MEXC'
-  #futures: 'BINANCE,BYBIT,GATEIO,KUCOIN,MEXC'
+  #spot: 'BYBIT,GATEIO,KUCOIN'
+  #swap: 'BYBIT,GATEIO,KUCOIN,HYPERLIQUID,PARADEX'
+  #futures: 'BYBIT,GATEIO'
 
   # this property use when we fetch fundings for all tickers for one ticker will be used swap
   # because for some exchanges it can take a lot time

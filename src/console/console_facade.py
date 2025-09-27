@@ -3,10 +3,12 @@ from typing import Optional
 from src.arbitrage.arbitrage_founder import ArbitrageFounder
 from src.arbitrage.data.spread_data import SpreadData
 from src.config.common_config import CommonConfig
-from src.connectors.common_connector import CommonConnector
 from src.connectors.data.full_ticker_info import FullTickerInfo
 from src.connectors.data.funding_rate_info import FundingRateInfo
 from src.connectors.data.base_ticker_info import BaseTickerInfo
+from src.connectors.future.future_common_connector import FutureCommonConnector
+from src.connectors.spot.spot_common_connector import SpotCommonConnector
+from src.connectors.swap.swap_common_connector import SwapCommonConnector
 from src.connectors.ticker_fetcher import TickerFetcher
 
 
@@ -77,11 +79,15 @@ def filter_wrong_pairs(spreads: list[SpreadData]) -> list[SpreadData]:
 
 class ConsoleFacade:
 
-    def __init__(self, all_connectors: list[CommonConnector]):
+    def __init__(self, all_spot_connectors: list[SpotCommonConnector],
+                 all_swap_connectors: list[SwapCommonConnector],
+                 all_futures_connectors: list[FutureCommonConnector]):
         self.common_config = CommonConfig('common_settings.yaml')
         self.ticker_fetcher = TickerFetcher()
         self.founder = ArbitrageFounder()
-        self.all_connectors = all_connectors
+        self.all_spot_connectors: list[SpotCommonConnector] = all_spot_connectors
+        self.all_swap_connectors: list[SwapCommonConnector] = all_swap_connectors
+        self.all_futures_connectors: list[FutureCommonConnector] = all_futures_connectors
 
     def print_funding_rate_for_coin(self):
         base = input("Enter coin name (base currency): ")
@@ -108,7 +114,7 @@ class ConsoleFacade:
         self.common_config.read_config()
         exchanges = self.common_config.get_exchanges_for_fetch_top_fundings()
         connectors = []
-        for connector in self.all_connectors:
+        for connector in self.all_swap_connectors:
             if connector.get_exchange_name() in exchanges:
                 connectors.append(connector)
         for connector in connectors:
@@ -158,26 +164,26 @@ class ConsoleFacade:
         )
         return self.founder.find_arbitrage(tickers, self.common_config.get_min_spread())
 
-    def get_spot_connectors(self) -> list[CommonConnector]:
+    def get_spot_connectors(self) -> list[SpotCommonConnector]:
         exchanges = self.common_config.get_spot_exchanges()
         result = []
-        for connector in self.all_connectors:
+        for connector in self.all_spot_connectors:
             if connector.get_exchange_name() in exchanges:
                 result.append(connector)
         return result
 
-    def get_swap_connectors(self) -> list[CommonConnector]:
+    def get_swap_connectors(self) -> list[SwapCommonConnector]:
         exchanges = self.common_config.get_swap_exchanges()
         result = []
-        for connector in self.all_connectors:
+        for connector in self.all_swap_connectors:
             if connector.get_exchange_name() in exchanges:
                 result.append(connector)
         return result
 
-    def get_futures_connectors(self) -> list[CommonConnector]:
+    def get_futures_connectors(self) -> list[FutureCommonConnector]:
         exchanges = self.common_config.get_futures_exchanges()
         result = []
-        for connector in self.all_connectors:
+        for connector in self.all_futures_connectors:
             if connector.get_exchange_name() in exchanges:
                 result.append(connector)
         return result
