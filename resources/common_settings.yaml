@@ -1,6 +1,6 @@
 exchanges:
-  spot: 'BYBIT,GATEIO,KUCOIN'
-  swap: 'BYBIT,GATEIO,KUCOIN,HYPERLIQUID,PARADEX'
+  spot: 'BYBIT,GATEIO,KUCOIN,BINANCE,MEXC,BITGET,OKX'
+  swap: 'BYBIT,GATEIO,KUCOIN,HYPERLIQUID,PARADEX,BINANCE,MEXC,BITGET,OKX'
   futures: ''
   #spot: 'BYBIT,GATEIO,KUCOIN'
   #swap: 'BYBIT,GATEIO,KUCOIN,HYPERLIQUID,PARADEX'
@@ -8,9 +8,10 @@ exchanges:
 
   # this property use when we fetch fundings for all tickers for one ticker will be used swap
   # because for some exchanges it can take a lot time
-  fundings: 'BYBIT,GATEIO,HYPERLIQUID'
+  fundings: 'BYBIT,GATEIO,HYPERLIQUID,BINANCE,BITGET,OKX'
 
 min_spread: 1
+max_spread: 90
 # Working trade size for arbitrage (in quote currency, e.g. 50 USDT).
 # Note: if you want to trade for 50 USDT, it is safer to set this value 2x higher
 # (e.g. 200 USDT), since real market execution can be worse than ideal calculations.
