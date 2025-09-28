@@ -162,7 +162,8 @@ class ConsoleFacade:
             self.get_swap_connectors(),
             self.get_futures_connectors()
         )
-        return self.founder.find_arbitrage(tickers, self.common_config.get_min_spread())
+        spreads = self.founder.find_arbitrage(tickers, self.common_config.get_min_spread())
+        return [item for item in spreads if item.spread_percent <= self.common_config.get_max_spread()]
 
     def get_spot_connectors(self) -> list[SpotCommonConnector]:
         exchanges = self.common_config.get_spot_exchanges()
