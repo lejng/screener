@@ -1,3 +1,4 @@
+from src.arbitrage.arbitrage_facade import ArbitrageFacade
 from src.connectors.future.bybit_future_connector import BybitFutureConnector
 from src.connectors.future.future_common_connector import FutureCommonConnector
 from src.connectors.future.gate_future_connector import GateFutureConnector
@@ -48,7 +49,8 @@ all_futures_connectors: list[FutureCommonConnector] = [
         GateFutureConnector()
     ]
 
-console_facade = ConsoleFacade(all_spot_connectors, all_swap_connectors, all_futures_connectors)
+arbitrage_facade = ArbitrageFacade(all_spot_connectors, all_swap_connectors, all_futures_connectors)
+console_facade = ConsoleFacade(arbitrage_facade)
 while True:
     print("1 - Exit")
     print("2 - Show all types of spreads (spot-spot, spot-swap, spot-futures, swap-swap, all combinations swap and futures)")

@@ -1,15 +1,11 @@
 from typing import Optional
 
-from src.arbitrage.arbitrage_founder import ArbitrageFounder
+from src.arbitrage.arbitrage_facade import ArbitrageFacade
 from src.arbitrage.data.spread_data import SpreadData
+from src.arbitrage.data.supported_exchanges import SupportedExchanges
 from src.config.common_config import CommonConfig
 from src.connectors.data.full_ticker_info import FullTickerInfo
 from src.connectors.data.funding_rate_info import FundingRateInfo
-from src.connectors.data.base_ticker_info import BaseTickerInfo
-from src.connectors.future.future_common_connector import FutureCommonConnector
-from src.connectors.spot.spot_common_connector import SpotCommonConnector
-from src.connectors.swap.swap_common_connector import SwapCommonConnector
-from src.connectors.ticker_fetcher import TickerFetcher
 
 
 # ============= Print full spread data (checking order book and funding) =============
@@ -68,38 +64,17 @@ def print_rate(rate: FundingRateInfo, space: str):
             f"action: {rate.get_action_for_collect_funding()} ")
     print(line)
 
-# ============= Utils methods =============
-# remove situation where buy futures/swap and sell spot, because usually impossible open short spot position
-def filter_wrong_pairs(spreads: list[SpreadData]) -> list[SpreadData]:
-     return [
-        item for item in spreads
-        if not (item.ticker_to_sell.spot
-                and (item.ticker_to_buy.swap or item.ticker_to_buy.future))
-    ]
-
 class ConsoleFacade:
 
-    def __init__(self, all_spot_connectors: list[SpotCommonConnector],
-                 all_swap_connectors: list[SwapCommonConnector],
-                 all_futures_connectors: list[FutureCommonConnector]):
+    def __init__(self, arbitrage_facade: ArbitrageFacade):
         self.common_config = CommonConfig('common_settings.yaml')
-        self.ticker_fetcher = TickerFetcher()
-        self.founder = ArbitrageFounder()
-        self.all_spot_connectors: list[SpotCommonConnector] = all_spot_connectors
-        self.all_swap_connectors: list[SwapCommonConnector] = all_swap_connectors
-        self.all_futures_connectors: list[FutureCommonConnector] = all_futures_connectors
+        self.arbitrage_facade = arbitrage_facade
 
     def print_funding_rate_for_coin(self):
         base = input("Enter coin name (base currency): ")
         self.common_config.read_config()
         amount_in_quote = self.common_config.get_amount_in_quote()
-        tickers: list[FullTickerInfo] = self.ticker_fetcher.fetch_tickers_by_base(
-            [],
-            self.get_swap_connectors(),
-            [],
-            base,
-            amount_in_quote
-        )
+        tickers: list[FullTickerInfo] = self.arbitrage_facade.get_full_ticker_info_for_swap_coin(base, amount_in_quote, self.common_config.get_swap_exchanges())
         for ticker in tickers:
             funding_info = ticker.get_funding_info()
             print(f"{ticker.get_trading_view_name()} "
@@ -113,19 +88,15 @@ class ConsoleFacade:
     def print_top_funding_rates(self):
         self.common_config.read_config()
         exchanges = self.common_config.get_exchanges_for_fetch_top_fundings()
-        connectors = []
-        for connector in self.all_swap_connectors:
-            if connector.get_exchange_name() in exchanges:
-                connectors.append(connector)
-        for connector in connectors:
-            rates: dict[str, list[FundingRateInfo]] = connector.fetch_top_funding_rates()
-            print_top_rates(connector.get_exchange_name(), rates)
+        for exchange in exchanges:
+            rates: dict[str, list[FundingRateInfo]] = self.arbitrage_facade.get_top_funding_rates(exchange)
+            print_top_rates(exchange, rates)
 
     def print_all_spreads(self):
-        spreads: list[SpreadData] = self.find_spreads()
-        # remove situation where buy futures/swap and sell spot, because usually impossible open short spot position
-        filtered_spreads = filter_wrong_pairs(spreads)
-        print_spreads("All arbitrage situations", filtered_spreads, self.common_config.get_min_spread())
+        self.common_config.reload_config()
+        exchanges: SupportedExchanges = self.get_supported_exchanges()
+        spreads: list[SpreadData] = self.arbitrage_facade.find_all_spreads(self.common_config.get_min_spread(), self.common_config.get_max_spread(), exchanges)
+        print_spreads("All arbitrage situations", spreads, self.common_config.get_min_spread())
 
     def print_spread_for_entered_coin(self):
         self.common_config.reload_config()
@@ -134,57 +105,30 @@ class ConsoleFacade:
         self.print_spread_for_coin(base, min_spread)
 
     def print_spread_for_coin(self, base: str, min_spread: float):
+        self.common_config.reload_config()
         amount_in_quote = self.common_config.get_amount_in_quote()
-        tickers: list[FullTickerInfo] = self.ticker_fetcher.fetch_tickers_by_base(
-            self.get_spot_connectors(),
-            self.get_swap_connectors(),
-            self.get_futures_connectors(),
+        exchanges: SupportedExchanges = self.get_supported_exchanges()
+        spreads: list[SpreadData] = self.arbitrage_facade.find_spread_for_coin(
             base,
-            amount_in_quote
+            min_spread,
+            amount_in_quote,
+            exchanges
         )
-        spreads :list[SpreadData] = self.founder.calculate_spreads(tickers, min_spread, base)
-        filtered_spreads = filter_wrong_pairs(sorted(spreads, key=lambda x: x.spread_percent, reverse=True))
-        print_full_spreads_data(filtered_spreads)
+        print_full_spreads_data(spreads)
 
     def print_spreads_without_transfer(self):
-        spreads: list[SpreadData] = self.find_spreads()
-        # remove spot-spot pairs
-        filtered_spreads = [
-            item for item in spreads
-            if not item.ticker_to_sell.spot
-        ]
-        print_spreads("Arbitrage situations without SPOT-SPOT pairs", filtered_spreads, self.common_config.get_min_spread())
-
-    def find_spreads(self) -> list[SpreadData]:
         self.common_config.reload_config()
-        tickers: dict[str, list[BaseTickerInfo]] = self.ticker_fetcher.fetch_tickers_in_parallel(
-            self.get_spot_connectors(),
-            self.get_swap_connectors(),
-            self.get_futures_connectors()
+        exchanges: SupportedExchanges = self.get_supported_exchanges()
+        spreads: list[SpreadData] = self.arbitrage_facade.find_spreads_without_transfer(
+            self.common_config.get_min_spread(),
+            self.common_config.get_max_spread(),
+            exchanges
         )
-        spreads = self.founder.find_arbitrage(tickers, self.common_config.get_min_spread())
-        return [item for item in spreads if item.spread_percent <= self.common_config.get_max_spread()]
+        print_spreads("Arbitrage situations without SPOT-SPOT pairs", spreads, self.common_config.get_min_spread())
 
-    def get_spot_connectors(self) -> list[SpotCommonConnector]:
-        exchanges = self.common_config.get_spot_exchanges()
-        result = []
-        for connector in self.all_spot_connectors:
-            if connector.get_exchange_name() in exchanges:
-                result.append(connector)
-        return result
-
-    def get_swap_connectors(self) -> list[SwapCommonConnector]:
-        exchanges = self.common_config.get_swap_exchanges()
-        result = []
-        for connector in self.all_swap_connectors:
-            if connector.get_exchange_name() in exchanges:
-                result.append(connector)
-        return result
-
-    def get_futures_connectors(self) -> list[FutureCommonConnector]:
-        exchanges = self.common_config.get_futures_exchanges()
-        result = []
-        for connector in self.all_futures_connectors:
-            if connector.get_exchange_name() in exchanges:
-                result.append(connector)
-        return result
+    def get_supported_exchanges(self) -> SupportedExchanges:
+        return SupportedExchanges(
+            self.common_config.get_spot_exchanges(),
+            self.common_config.get_swap_exchanges(),
+            self.common_config.get_futures_exchanges()
+        )
