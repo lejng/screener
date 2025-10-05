@@ -12,7 +12,7 @@ class CommonConnector(ABC):
     def __init__(self):
         self.logger = CustomLogger()
         # think about property file per connector and read this values
-        self.allowed_quotes = { 'USDT', 'USDC', 'USD', 'USDE' }
+        self.allowed_quotes = { 'USDT', 'USDC' }
         self.exclude_base = set()
 
     def convert_to_ticker_info(self, ticker: Ticker, spot: bool, swap: bool, future: bool) -> BaseTickerInfo:

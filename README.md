@@ -22,12 +22,24 @@ pip install -r requirements.txt
 pip uninstall -r requirements.txt
 ```
 
-### 4. How to run
+### 4. Deactivate virtual env
+```
+deactivate
+```
+
+### 5. How to run console app
 ```
 python -m src.main_console
 ```
 
-### 5. Deactivate virtual env
+### 6. How to run web app (dev mode)
 ```
-deactivate
+uvicorn src.main_web:app --port 8000 --reload
+```
+
+### 7. Endpoints
+```
+http://127.0.0.1:8000/
+http://127.0.0.1:8000/docs
+
 ```
