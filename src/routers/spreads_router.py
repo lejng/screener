@@ -63,6 +63,21 @@ def find_spread_for_coin(query: SpreadCoinQuery):
     spreads = arbitrage_facade.find_spread_for_coin(query.base, query.min_spread, query.amount_in_quote, exchanges)
     return [convert_to_full_spread_response(spread) for spread in spreads]
 
+@router.get("/by_symbol_and_exchange")
+def find_spread_by_symbol_and_exchange(symbol_1: str,
+                                       exchange_1: str,
+                                       exchange_type_1,
+                                       symbol_2,
+                                       exchange_2: str,
+                                       exchange_type_2,
+                                       amount_in_quote: float = 100):
+    spreads = arbitrage_facade.find_spread_by_symbol(
+        symbol_1, exchange_1, exchange_type_1,
+        symbol_2, exchange_2, exchange_type_2,
+        amount_in_quote
+    )
+    return [convert_to_full_spread_response(spread) for spread in spreads]
+
 def convert_to_full_spread_response(spread_data: SpreadData) -> dict:
     return {
         "base_currency": spread_data.base_currency,

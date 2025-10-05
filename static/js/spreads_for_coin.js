@@ -37,8 +37,29 @@ async function fetchSpreads() {
           tbody.innerHTML = "";
 
           data.forEach((item) => {
-            let ticker_to_buy = `${item.ticker_to_buy.trading_view_name}`;
-            let ticker_to_sell = `${item.ticker_to_sell.trading_view_name}`;
+            let ticker_to_buy = `${item.ticker_to_buy.trading_view_name}<br>
+            price: ${item.ticker_to_buy.best_buy_price}<br>
+            coins: ${item.ticker_to_buy.coins_to_buy}<br>
+            `;
+            let ticker_to_sell = `${item.ticker_to_sell.trading_view_name}<br>
+            price: ${item.ticker_to_sell.best_sell_price}<br>
+            coins: ${item.ticker_to_sell.coins_to_sell}<br>
+            `;
+            if (item.ticker_to_buy?.funding_info !== undefined) {
+                ticker_to_buy += `
+                funding rate: ${item.ticker_to_buy.funding_info.rate} %<br>
+                funding interval: ${item.ticker_to_buy.funding_info.interval}<br>
+                funding action: ${item.ticker_to_buy.funding_info.action_for_collect_funding}<br>
+                `
+            }
+
+            if (item.ticker_to_sell?.funding_info !== undefined) {
+                ticker_to_sell += `
+                funding rate: ${item.ticker_to_sell.funding_info.rate} %<br>
+                funding interval: ${item.ticker_to_sell.funding_info.interval}<br>
+                funding action: ${item.ticker_to_sell.funding_info.action_for_collect_funding}<br>
+                `
+            }
 
             const row = document.createElement("tr");
             row.innerHTML = `
