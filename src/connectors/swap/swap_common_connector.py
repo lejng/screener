@@ -21,12 +21,16 @@ class SwapCommonConnector(CommonConnector):
         return {'max': top_max, 'small': top_small}
 
     def fetch_funding_rates(self) -> list[FundingRateInfo]:
-        symbols = self.load_symbols()
-        rates: dict[str, FundingRate] = self.get_exchange().fetch_funding_rates(symbols=symbols)
-        return [
-            FundingRateInfo(rate)
-            for rate in rates.values()
-        ]
+        try:
+            symbols = self.load_symbols()
+            rates: dict[str, FundingRate] = self.get_exchange().fetch_funding_rates(symbols=symbols)
+            return [
+                FundingRateInfo(rate)
+                for rate in rates.values()
+            ]
+        except Exception as e:
+            self.logger.log_error(f"Error during fetch funding rates: {e}")
+            return []
 
     def fetch_funding_rate(self, symbol: str) -> Optional[FundingRateInfo]:
         rate: FundingRate = self.get_exchange().fetch_funding_rate(symbol)
@@ -41,12 +45,16 @@ class SwapCommonConnector(CommonConnector):
         return self.convert_to_ticker_info(ticker, False, True, False)
 
     def fetch_tickers(self) -> list[BaseTickerInfo]:
-        symbols = self.load_symbols()
-        tickers: dict[str, Ticker] = self.get_exchange().fetch_tickers(symbols=symbols, params={'category': 'swap'})
-        return [
-            self.convert_to_ticker_info(ticker, False, True, False)
-            for ticker in tickers.values()
-        ]
+        try:
+            symbols = self.load_symbols()
+            tickers: dict[str, Ticker] = self.get_exchange().fetch_tickers(symbols=symbols, params={'category': 'swap'})
+            return [
+                self.convert_to_ticker_info(ticker, False, True, False)
+                for ticker in tickers.values()
+            ]
+        except Exception as e:
+            self.logger.log_error(f"Error during fetch tickers: {e}")
+            return []
 
     def load_symbols(self) -> list[str]:
         symbols = []

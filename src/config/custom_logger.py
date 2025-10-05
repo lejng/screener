@@ -6,7 +6,7 @@ class CustomLogger:
     def __init__(self):
         logging.basicConfig(
             level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s',
             handlers=[
                 logging.FileHandler('app.log'),
                 # this is console log
@@ -16,7 +16,7 @@ class CustomLogger:
         self.logger = logging.getLogger(__name__)
 
     def log_info(self, message: str):
-        self.logger.info(message)
+        self.logger.info(message, stacklevel=2)
 
     def log_error(self, message: str):
-        self.logger.error(message)
+        self.logger.error(message, stacklevel=2)

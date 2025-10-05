@@ -13,11 +13,15 @@ class KucoinSwapConnector(SwapCommonConnector):
         self.exchange = ccxt.kucoinfutures({'options': {'defaultType': 'swap'}})
 
     def fetch_funding_rates(self) -> list[FundingRateInfo]:
-        symbols = self.load_symbols()
-        result = []
-        for symbol in symbols:
-            result.append(self.fetch_funding_rate(symbol))
-        return result
+        try:
+            symbols = self.load_symbols()
+            result = []
+            for symbol in symbols:
+                result.append(self.fetch_funding_rate(symbol))
+            return result
+        except Exception as e:
+            self.logger.log_error(f"Error during fetch funding rates: {e}")
+            return []
 
     def fetch_order_book(self, symbol: str) -> OrderBook:
         order_book: OrderBook = self.get_exchange().fetch_order_book(symbol=symbol, limit=100, params={'category': 'swap'})

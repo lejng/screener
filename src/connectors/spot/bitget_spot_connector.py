@@ -21,12 +21,16 @@ class BitgetSpotConnector(SpotCommonConnector):
         return self.convert_to_ticker_info(ticker, True, False, False)
 
     def fetch_tickers(self) -> list[BaseTickerInfo]:
-        symbols: list[str] = self.load_symbols()
-        tickers: dict[str, Ticker] = self.get_exchange().fetch_tickers(symbols=symbols)
-        return [
-            self.convert_to_ticker_info(ticker, True, False, False)
-            for ticker in tickers.values()
-        ]
+        try:
+            symbols: list[str] = self.load_symbols()
+            tickers: dict[str, Ticker] = self.get_exchange().fetch_tickers(symbols=symbols)
+            return [
+                self.convert_to_ticker_info(ticker, True, False, False)
+                for ticker in tickers.values()
+            ]
+        except Exception as e:
+            self.logger.log_error(f"Error during fetch tickers: {e}")
+            return []
 
     def get_exchange(self) -> Exchange:
         return self.exchange

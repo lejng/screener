@@ -24,8 +24,6 @@ pip uninstall -r requirements.txt
 
 ### 4. How to run
 ```
-python -m src.main_ui
-
 python -m src.main_console
 ```
 

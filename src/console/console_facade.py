@@ -77,10 +77,17 @@ class ConsoleFacade:
         tickers: list[FullTickerInfo] = self.arbitrage_facade.get_full_ticker_info_for_swap_coin(base, amount_in_quote, self.common_config.get_swap_exchanges())
         for ticker in tickers:
             funding_info = ticker.get_funding_info()
+            rate = None
+            interval = None
+            action = None
+            if funding_info is not None:
+                rate = funding_info.get_funding_rate_percent()
+                interval = funding_info.get_interval()
+                action = funding_info.get_action_for_collect_funding()
             print(f"{ticker.get_trading_view_name()} "
-                  f"| rate: {funding_info.get_funding_rate_percent()} % ," +
-                  f"interval: {funding_info.get_interval()} ," +
-                  f"action: {funding_info.get_action_for_collect_funding()} "
+                  f"| rate: {rate} % ," +
+                  f"interval: {interval} ," +
+                  f"action: {action} "
                   f"| best_buy_price: {ticker.get_best_buy_price()} "
                   f"| best_sell_price: {ticker.get_best_sell_price()} "
                   f"| coins: {ticker.get_coins_to_buy()}]")
