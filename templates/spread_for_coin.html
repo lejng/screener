@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>More info</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            border: none;
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .spread-badge {
+            font-size: 1rem;
+            padding: 8px 12px;
+        }
+        .exchange-badge {
+            font-size: 0.8rem;
+        }
+        .funding-info {
+            background-color: #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .profit-positive {
+            color: #198754;
+        }
+        .market-type {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-4">
+        <h1 class="mb-4"><i class="bi bi-currency-exchange"></i> More info about</h1>
+
+        <div id="arbitrageData" class="row">
+            <!-- Data will be populated here by JavaScript -->
+        </div>
+        <div class="d-flex justify-content-center mt-5">
+        <div id="spinner" class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        window.hiddenParams = {{ hidden_params_json | safe }};
+    </script>
+
+    <script src="/static/js/spread_for_coin.js"></script>
+</body>
+</html>
+
+
+

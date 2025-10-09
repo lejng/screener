@@ -35,6 +35,7 @@ python -m src.main_console
 ### 6. How to run web app (dev mode)
 ```
 uvicorn src.main_web:app --port 8000 --reload
+uvicorn src.main_web:app --port 8000
 ```
 
 ### 7. Endpoints

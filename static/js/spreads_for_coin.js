@@ -6,6 +6,7 @@ async function fetchSpreads() {
 
         // get filter values
         const coin = document.getElementById("coin").value;
+        const amountInUsdt = parseFloat(document.getElementById("amountInUsdt").value);
         const selectedExchangesSpot = Array.from(
           document.getElementById("exchanges_spot").selectedOptions
         ).map((opt) => opt.value);
@@ -18,13 +19,14 @@ async function fetchSpreads() {
 
         const bodyData = {
           base: coin,
+          amount_in_quote: amountInUsdt,
           spot_exchanges: selectedExchangesSpot,
           swap_exchanges: selectedExchangesSwap,
           futures_exchanges: selectedExchangesFuture,
         };
 
         try {
-          const response = await fetch("/spreads/by_coin_name", {
+          const response = await fetch("/api/spreads/by_coin_name", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(bodyData),
