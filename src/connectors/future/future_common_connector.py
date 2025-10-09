@@ -21,12 +21,16 @@ class FutureCommonConnector(CommonConnector):
         return self.convert_to_ticker_info(ticker, False, False, True)
 
     def fetch_tickers(self) -> list[BaseTickerInfo]:
-        symbols = self.load_symbols()
-        tickers: dict[str, Ticker] = self.get_exchange().fetch_tickers(symbols=symbols)
-        return [
-            self.convert_to_ticker_info(ticker, False, False, True)
-            for ticker in tickers.values()
-        ]
+        try:
+            symbols = self.load_symbols()
+            tickers: dict[str, Ticker] = self.get_exchange().fetch_tickers(symbols=symbols)
+            return [
+                self.convert_to_ticker_info(ticker, False, False, True)
+                for ticker in tickers.values()
+            ]
+        except Exception as e:
+            self.logger.log_error(f"Error during fetch tickers: {e}")
+            return []
 
     def load_symbols(self) -> list[str]:
         symbols = []

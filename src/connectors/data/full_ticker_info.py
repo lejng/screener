@@ -34,6 +34,9 @@ class FullTickerInfo(BaseTickerInfo):
             amount_in_quote
         )
 
+    def get_amount_in_quote(self) -> Optional[float]:
+        return self.amount_in_quote
+
     def get_best_buy_price(self) -> Optional[float]:
         if self._best_buy_price is None:
             self._best_buy_price = self.vwap(self.order_book["asks"])

@@ -21,15 +21,19 @@ class BinanceSpotConnector(SpotCommonConnector):
         return order_book
 
     def fetch_tickers(self) -> list[BaseTickerInfo]:
-        symbols: list[str] = self.load_symbols()
-        symbol_pages: list[list[str]] = self.paginate(symbols, 400)
-        tickers: dict[str, Ticker] = {}
-        for symbol_page in symbol_pages:
-            tickers.update(self.get_exchange().fetch_tickers(symbols=symbol_page, params={'type': 'spot'}))
-        return [
-            self.convert_to_ticker_info(ticker, True, False, False)
-            for ticker in tickers.values()
-        ]
+        try:
+            symbols: list[str] = self.load_symbols()
+            symbol_pages: list[list[str]] = self.paginate(symbols, 400)
+            tickers: dict[str, Ticker] = {}
+            for symbol_page in symbol_pages:
+                tickers.update(self.get_exchange().fetch_tickers(symbols=symbol_page, params={'type': 'spot'}))
+            return [
+                self.convert_to_ticker_info(ticker, True, False, False)
+                for ticker in tickers.values()
+            ]
+        except Exception as e:
+            self.logger.log_error(f"Error during fetch tickers: {e}")
+            return []
 
     def get_exchange(self) -> Exchange:
         return self.exchange

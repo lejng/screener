@@ -13,12 +13,17 @@ class BybitSwapConnector(SwapCommonConnector):
         self.exchange = ccxt.bybit({'options': {'defaultType': 'swap'}})
 
     def fetch_tickers(self) -> list[BaseTickerInfo]:
-        symbols = self.load_symbols()
-        tickers: dict[str, Ticker] = self.get_exchange().fetch_tickers(symbols=symbols, params={'category': 'linear'})
-        return [
-            self.convert_to_ticker_info(ticker, False, True, False)
-            for ticker in tickers.values()
-        ]
+        try:
+            symbols = self.load_symbols()
+            tickers: dict[str, Ticker] = self.get_exchange().fetch_tickers(symbols=symbols,
+                                                                           params={'category': 'linear'})
+            return [
+                self.convert_to_ticker_info(ticker, False, True, False)
+                for ticker in tickers.values()
+            ]
+        except Exception as e:
+            self.logger.log_error(f"Error during fetch tickers: {e}")
+            return []
 
     def fetch_ticker(self, symbol: str) -> BaseTickerInfo:
         ticker: Ticker = self.get_exchange().fetch_ticker(symbol=symbol, params={'category': 'linear'})

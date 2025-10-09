@@ -34,6 +34,9 @@ class BaseTickerInfo:
     def get_funding_info(self) -> Optional[FundingRateInfo]:
         return None
 
+    def get_amount_in_quote(self) -> Optional[float]:
+        return None
+
     def get_market_type(self) -> str:
         if self.spot:
             return "spot"

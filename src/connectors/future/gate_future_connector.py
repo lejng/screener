@@ -12,12 +12,16 @@ class GateFutureConnector(FutureCommonConnector):
         self.exchange = ccxt.gate({'options': {'defaultType': 'future'}})
 
     def fetch_tickers(self) -> list[BaseTickerInfo]:
-        symbols = self.load_symbols()
-        tickers: list[BaseTickerInfo] = []
-        for symbol in symbols:
-            ticker: BaseTickerInfo = self.fetch_ticker(symbol=symbol)
-            tickers.append(ticker)
-        return tickers
+        try:
+            symbols = self.load_symbols()
+            tickers: list[BaseTickerInfo] = []
+            for symbol in symbols:
+                ticker: BaseTickerInfo = self.fetch_ticker(symbol=symbol)
+                tickers.append(ticker)
+            return tickers
+        except Exception as e:
+            self.logger.log_error(f"Error during fetch tickers: {e}")
+            return []
 
     def get_exchange(self) -> Exchange:
         return self.exchange

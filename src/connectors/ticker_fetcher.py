@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from ccxt.base.types import OrderBook
 
 from src.config.custom_logger import CustomLogger
+from src.connectors.common_connector import CommonConnector
 from src.connectors.data.full_ticker_info import FullTickerInfo
 from src.connectors.data.base_ticker_info import BaseTickerInfo
 from src.connectors.data.funding_rate_info import FundingRateInfo
@@ -15,6 +16,15 @@ class TickerFetcher:
 
     def __init__(self):
         self.logger = CustomLogger()
+
+    def fetch_ticker_by_symbol(self, symbol: str, connector: CommonConnector, amount_in_quote: float) -> FullTickerInfo:
+        self.logger.log_info(f"Fetching ticker by symbol {symbol}")
+        ticker: BaseTickerInfo = connector.fetch_ticker(symbol)
+        order_book: OrderBook = connector.fetch_order_book(symbol)
+        if ticker.swap and isinstance(connector, SwapCommonConnector):
+            funding_rate_info: FundingRateInfo = connector.fetch_funding_rate(symbol)
+            return FullTickerInfo.create(ticker, order_book, amount_in_quote, funding_rate_info)
+        return FullTickerInfo.create(ticker, order_book, amount_in_quote)
 
     def fetch_tickers_by_base(self, spot_connectors: list[SpotCommonConnector],
                               swap_connectors: list[SwapCommonConnector],
