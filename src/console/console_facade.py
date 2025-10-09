@@ -115,7 +115,7 @@ class ConsoleFacade:
         self.common_config.reload_config()
         amount_in_quote = self.common_config.get_amount_in_quote()
         exchanges: SupportedExchanges = self.get_supported_exchanges()
-        spreads: list[SpreadData] = self.arbitrage_facade.find_spread_for_coin(
+        spreads: list[SpreadData] = self.arbitrage_facade.find_spreads_by_coin_name(
             base,
             min_spread,
             amount_in_quote,

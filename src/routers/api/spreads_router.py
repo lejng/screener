@@ -8,6 +8,7 @@ from src.connectors.connectors_container import all_spot_connectors
 from src.connectors.connectors_container import all_swap_connectors
 from src.connectors.connectors_container import all_futures_connectors
 from src.connectors.data.base_ticker_info import BaseTickerInfo
+from src.connectors.data.funding_rate_info import FundingRateInfo
 
 arbitrage_facade: ArbitrageFacade = ArbitrageFacade(all_spot_connectors, all_swap_connectors, all_futures_connectors)
 
@@ -60,7 +61,7 @@ def find_spread_for_coin(query: SpreadCoinQuery):
         query.swap_exchanges,
         query.futures_exchanges
     )
-    spreads = arbitrage_facade.find_spread_for_coin(query.base, query.min_spread, query.amount_in_quote, exchanges)
+    spreads = arbitrage_facade.find_spreads_by_coin_name(query.base, query.min_spread, query.amount_in_quote, exchanges)
     return [convert_to_full_spread_response(spread) for spread in spreads]
 
 @router.get("/by_symbol_and_exchange")
@@ -100,11 +101,7 @@ def convert_to_buy_ticker_response(ticker: BaseTickerInfo) -> dict:
     }
     funding = ticker.get_funding_info()
     if funding is not None:
-        response_ticker["funding_info"] = {
-            "rate": funding.get_funding_rate_percent(),
-            "interval": funding.get_interval(),
-            "action_for_collect_funding": funding.get_action_for_collect_funding()
-        }
+        response_ticker["funding_info"] = convert_funding_response(funding)
     return response_ticker
 
 def convert_to_sell_ticker_response(ticker: BaseTickerInfo) -> dict:
@@ -121,9 +118,12 @@ def convert_to_sell_ticker_response(ticker: BaseTickerInfo) -> dict:
     }
     funding = ticker.get_funding_info()
     if funding is not None:
-        response_ticker["funding_info"] = {
+        response_ticker["funding_info"] = convert_funding_response(funding)
+    return response_ticker
+
+def convert_funding_response(funding: FundingRateInfo) -> dict:
+    return {
             "rate": funding.get_funding_rate_percent(),
             "interval": funding.get_interval(),
             "action_for_collect_funding": funding.get_action_for_collect_funding()
         }
-    return response_ticker

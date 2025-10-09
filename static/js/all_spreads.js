@@ -45,7 +45,7 @@ async function fetchSpreads() {
           data.forEach((item) => {
             let ticker_to_buy = `${item.ticker_to_buy.trading_view_name}`;
             let ticker_to_sell = `${item.ticker_to_sell.trading_view_name}`;
-            link = `/spread/by_symbol_and_exchange?symbol_1=${item.ticker_to_buy.symbol}&exchange_1=${item.ticker_to_buy.exchange_name}&exchange_type_1=${item.ticker_to_buy.market_type}&symbol_2=${item.ticker_to_sell.symbol}&exchange_2=${item.ticker_to_sell.exchange_name}&exchange_type_2=${item.ticker_to_sell.market_type}&amount_in_quote=${amountInUsdt}`
+            link = `/spread_by_symbol_and_exchange?symbol_1=${item.ticker_to_buy.symbol}&exchange_1=${item.ticker_to_buy.exchange_name}&exchange_type_1=${item.ticker_to_buy.market_type}&symbol_2=${item.ticker_to_sell.symbol}&exchange_2=${item.ticker_to_sell.exchange_name}&exchange_type_2=${item.ticker_to_sell.market_type}&amount_in_quote=${amountInUsdt}`
 
             const row = document.createElement("tr");
             row.innerHTML = `

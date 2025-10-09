@@ -62,8 +62,8 @@ class ArbitrageFacade:
         ticker_2 = self.ticker_fetcher.fetch_ticker_by_symbol(symbol_2, connector_2, amount_in_quote)
         return self.founder.calculate_spreads([ticker_1, ticker_2], 0.000001, ticker_1.base_currency)
 
-    def find_spread_for_coin(self, base: str, min_spread: float,
-                             amount_in_quote: float, exchanges: SupportedExchanges) -> list[SpreadData]:
+    def find_spreads_by_coin_name(self, base: str, min_spread: float,
+                                  amount_in_quote: float, exchanges: SupportedExchanges) -> list[SpreadData]:
         tickers: list[FullTickerInfo] = self.ticker_fetcher.fetch_tickers_by_base(
             self.get_spot_connectors(exchanges.spot_exchanges),
             self.get_swap_connectors(exchanges.swap_exchanges),

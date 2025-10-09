@@ -17,14 +17,14 @@ def main_page(request: Request):
     return templates.TemplateResponse("main.html", {"request": request})
 
 @router.get("/spreads", response_class=HTMLResponse)
-def main_page(request: Request):
+def spreads_page(request: Request):
     return templates.TemplateResponse("all_spreads.html", {"request": request})
 
 @router.get("/spreads_for_coin", response_class=HTMLResponse)
 def main_page(request: Request):
     return templates.TemplateResponse("spreads_for_coin.html", {"request": request})
 
-@router.get("/spread/by_symbol_and_exchange", response_class=HTMLResponse)
+@router.get("/spread_by_symbol_and_exchange", response_class=HTMLResponse)
 def find_spread_by_symbol_and_exchange(request: Request,
                                        symbol_1: str,
                                        exchange_1: str,
@@ -42,4 +42,4 @@ def find_spread_by_symbol_and_exchange(request: Request,
         "exchange_type_2": exchange_type_2,
         "amount_in_quote": amount_in_quote
     }
-    return templates.TemplateResponse("spread_for_coin.html", {"request": request,  "hidden_params_json": dumps(hidden_params)})
+    return templates.TemplateResponse("spread_by_symbol_and_exchange.html", {"request": request,  "hidden_params_json": dumps(hidden_params)})

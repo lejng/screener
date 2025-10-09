@@ -27,6 +27,10 @@ async function renderArbitrageData() {
     const container = document.getElementById('arbitrageData');
     container.innerHTML = ''; // Очищаем контейнер перед добавлением новых данных
 
+     if (!data || data.length === 0) {
+        alert("Spread data absent");
+     }
+
     data.forEach(opportunity => {
         const spreadClass = opportunity.spread_percent > 0 ? 'bg-success' : 'bg-danger';
 
