@@ -44,7 +44,7 @@ def get_spreads(query: SpreadsQuery):
     return [convert_to_full_spread_response(spread) for spread in spreads]
 
 @router.post("/no-transfer")
-def get_spreads(query: SpreadsQuery):
+def get_spreads_without_transfer(query: SpreadsQuery):
     exchanges = SupportedExchanges(
         query.spot_exchanges,
         query.swap_exchanges,
@@ -67,10 +67,10 @@ def find_spread_for_coin(query: SpreadCoinQuery):
 @router.get("/by_symbol_and_exchange")
 def find_spread_by_symbol_and_exchange(symbol_1: str,
                                        exchange_1: str,
-                                       exchange_type_1,
-                                       symbol_2,
+                                       exchange_type_1: str,
+                                       symbol_2: str,
                                        exchange_2: str,
-                                       exchange_type_2,
+                                       exchange_type_2: str,
                                        amount_in_quote: float = 100):
     spreads = arbitrage_facade.find_spread_by_symbol(
         symbol_1, exchange_1, exchange_type_1,
