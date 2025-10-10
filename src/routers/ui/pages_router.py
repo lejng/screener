@@ -21,17 +21,17 @@ def spreads_page(request: Request):
     return templates.TemplateResponse("all_spreads.html", {"request": request})
 
 @router.get("/spreads_for_coin", response_class=HTMLResponse)
-def main_page(request: Request):
+def spreads_for_coin_page(request: Request):
     return templates.TemplateResponse("spreads_for_coin.html", {"request": request})
 
 @router.get("/spread_by_symbol_and_exchange", response_class=HTMLResponse)
-def find_spread_by_symbol_and_exchange(request: Request,
+def spread_by_symbol_and_exchange_page(request: Request,
                                        symbol_1: str,
                                        exchange_1: str,
-                                       exchange_type_1,
-                                       symbol_2,
+                                       exchange_type_1: str,
+                                       symbol_2: str,
                                        exchange_2: str,
-                                       exchange_type_2,
+                                       exchange_type_2: str,
                                        amount_in_quote: float = 100):
     hidden_params = {
         "symbol_1": symbol_1,
