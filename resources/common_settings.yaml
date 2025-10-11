@@ -1,3 +1,4 @@
+# this file used only for console app for web user sent parameters in request
 exchanges:
   spot: 'BYBIT,GATEIO,KUCOIN,BINANCE,MEXC,BITGET,OKX'
   swap: 'BYBIT,GATEIO,KUCOIN,HYPERLIQUID,PARADEX,BINANCE,MEXC,BITGET,OKX'
