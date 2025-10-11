@@ -8,7 +8,7 @@ class CustomLogger:
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s',
             handlers=[
-                logging.FileHandler('logs/app.log'),
+                #logging.FileHandler('logs/app.log'),
                 # this is console log
                 logging.StreamHandler()
             ]
