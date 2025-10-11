@@ -42,5 +42,36 @@ uvicorn src.main_web:app --port 8000
 ```
 http://127.0.0.1:8000/
 http://127.0.0.1:8000/docs
+```
 
+## Docker Commands
+
+### 8. Run with Docker Compose
+```bash
+# Build and start
+docker-compose up --build
+
+# Start in background
+docker-compose up -d
+
+# Start without rebuild
+docker-compose up
+```
+
+### 9. Stop Docker containers
+```bash
+# Stop containers
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+
+# Stop and remove images
+docker-compose down --rmi all
+```
+
+### 10. Docker endpoints
+```
+http://localhost:8000/
+http://localhost:8000/docs
 ```

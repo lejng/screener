@@ -44,7 +44,7 @@ class ArbitrageFacade:
         for connector in self.all_swap_connectors:
             if connector.get_exchange_name() == exchange:
                 return connector.fetch_top_funding_rates()
-        return dict()
+        return {'max': [], 'small': []}
 
     def find_all_spreads(self, min_spread: float, max_spread: float,
                      exchanges: SupportedExchanges) -> list[SpreadData]:
