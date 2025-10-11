@@ -27,7 +27,7 @@ async function renderArbitrageData() {
     const container = document.getElementById('arbitrageData');
     container.innerHTML = '';
     if (!data || data.length === 0) {
-      container.innerHTML = '<div class="alert alert-warning" role="alert">No spreads found.</div>';
+      container.innerHTML = `<div class="alert alert-warning" role="alert">No spreads found for trading amount: ${window.hiddenParams.amount_in_quote}</div>`;
       return;
     }
     data.forEach((opportunity) => renderCard(container, opportunity));

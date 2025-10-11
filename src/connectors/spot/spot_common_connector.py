@@ -13,7 +13,7 @@ class SpotCommonConnector(CommonConnector):
         super().__init__()
 
     def fetch_order_book(self, symbol: str) -> OrderBook:
-        order_book: OrderBook = self.get_exchange().fetch_order_book(symbol=symbol, limit=50, params={'type': 'spot'})
+        order_book: OrderBook = self.get_exchange().fetch_order_book(symbol=symbol, limit=200, params={'type': 'spot'})
         return order_book
 
     def fetch_ticker(self, symbol: str) -> BaseTickerInfo:

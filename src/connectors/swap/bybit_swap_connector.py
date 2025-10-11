@@ -31,7 +31,7 @@ class BybitSwapConnector(SwapCommonConnector):
 
     def fetch_order_book(self, symbol: str) -> OrderBook:
         order_book: OrderBook = self.get_exchange().fetch_order_book(
-            symbol=symbol, limit=50, params={'category': 'linear'}
+            symbol=symbol, limit=200, params={'category': 'linear'}
         )
         return order_book
 
