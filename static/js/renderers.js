@@ -19,7 +19,7 @@ function renderSpreadCard(container, opportunity) {
                   <div class="row"><div class="col-6"><strong>Symbol:</strong></div><div class="col-6">${opportunity.ticker_to_buy.trading_view_name}</div></div>
                   <div class="row"><div class="col-6"><strong>Best Buy Price:</strong></div><div class="col-6">$${formatNumber(opportunity.ticker_to_buy.best_buy_price)}</div></div>
                   <div class="row"><div class="col-6"><strong>Coins to Buy:</strong></div><div class="col-6">${formatNumber(opportunity.ticker_to_buy.coins_to_buy, 4)}</div></div>
-                  <div class="row"><div class="col-6"><strong>Position Amount:</strong></div><div class="col-6">$${formatNumber(opportunity.ticker_to_buy.position_amount, 2)}</div></div>
+                  <div class="row"><div class="col-6"><strong>Max position size:</strong></div><div class="col-6">$${formatNumber(opportunity.ticker_to_buy.position_amount, 2)}</div></div>
                   ${opportunity.ticker_to_buy.funding_info ? `
                     <div class="funding-info mt-3">
                       <h6>Funding Information</h6>
@@ -40,7 +40,7 @@ function renderSpreadCard(container, opportunity) {
                   <div class="row"><div class="col-6"><strong>Symbol:</strong></div><div class="col-6">${opportunity.ticker_to_sell.trading_view_name}</div></div>
                   <div class="row"><div class="col-6"><strong>Best Sell Price:</strong></div><div class="col-6">$${formatNumber(opportunity.ticker_to_sell.best_sell_price)}</div></div>
                   <div class="row"><div class="col-6"><strong>Coins to Sell:</strong></div><div class="col-6">${formatNumber(opportunity.ticker_to_sell.coins_to_sell, 4)}</div></div>
-                  <div class="row"><div class="col-6"><strong>Position Amount:</strong></div><div class="col-6">$${formatNumber(opportunity.ticker_to_sell.position_amount, 2)}</div></div>
+                  <div class="row"><div class="col-6"><strong>Max position size:</strong></div><div class="col-6">$${formatNumber(opportunity.ticker_to_sell.position_amount, 2)}</div></div>
                   ${opportunity.ticker_to_sell.funding_info ? `
                     <div class="funding-info mt-3">
                       <h6>Funding Information</h6>

@@ -13,7 +13,7 @@ class BitgetSwapConnector(SwapCommonConnector):
         self.exchange = ccxt.bitget({'options': {'defaultType': 'mix'}})
 
     def fetch_order_book(self, symbol: str) -> OrderBook:
-        order_book: OrderBook = self.get_exchange().fetch_order_book(symbol=symbol, limit=50)
+        order_book: OrderBook = self.get_exchange().fetch_order_book(symbol=symbol, limit=200)
         return order_book
 
     def fetch_ticker(self, symbol: str) -> BaseTickerInfo:

@@ -1,7 +1,8 @@
 import ccxt
 from ccxt import Exchange
-from ccxt.base.types import OrderBook
+from ccxt.base.types import OrderBook, Ticker
 
+from src.connectors.data.base_ticker_info import BaseTickerInfo
 from src.connectors.data.funding_rate_info import FundingRateInfo
 from src.connectors.swap.swap_common_connector import SwapCommonConnector
 
@@ -11,6 +12,18 @@ class KucoinSwapConnector(SwapCommonConnector):
     def __init__(self):
         super().__init__()
         self.exchange = ccxt.kucoinfutures({'options': {'defaultType': 'swap'}})
+
+    def fetch_tickers(self) -> list[BaseTickerInfo]:
+        try:
+            symbols = self.load_symbols()
+            tickers: dict[str, Ticker] = self.get_exchange().fetch_bids_asks(symbols=symbols, params={'category': 'swap'})
+            return [
+                self.convert_to_ticker_info(ticker, False, True, False)
+                for ticker in tickers.values()
+            ]
+        except Exception as e:
+            self.logger.log_error(f"Error during fetch tickers: {e}")
+            return []
 
     def fetch_funding_rates(self) -> list[FundingRateInfo]:
         try:
