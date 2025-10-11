@@ -7,11 +7,6 @@ services:
       - "8000:8000"
     environment:
       - PYTHONPATH=/app
-    volumes:
-      # Mount config file for easy updates without rebuild
-      - ./resources/common_settings.yaml:/app/resources/common_settings.yaml:ro
-      # Mount logs directory
-      - ./logs:/app/logs
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
