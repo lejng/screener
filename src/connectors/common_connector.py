@@ -5,6 +5,7 @@ from ccxt.base.types import Ticker, OrderBook
 
 from src.config.custom_logger import CustomLogger
 from src.connectors.data.base_ticker_info import BaseTickerInfo
+from src.connectors.data.market_candle import MarketCandle
 
 
 class CommonConnector(ABC):
@@ -14,6 +15,14 @@ class CommonConnector(ABC):
         # think about property file per connector and read this values
         self.allowed_quotes = { 'USDT', 'USDC' }
         self.exclude_base = set()
+
+    def fetch_ohlcv(self, symbol: str, limit: int, timeframe: str = '1m') -> list[MarketCandle]:
+        try:
+            ohlcv_data = self.get_exchange().fetch_ohlcv(symbol=symbol, timeframe=timeframe, limit = limit)
+            return [MarketCandle(*data) for data in ohlcv_data]
+        except Exception as e:
+            self.logger.log_error(f"Error fetch ohlcv: {symbol}, exchange: {self.get_exchange_name()}, exception: {e}")
+            return []
 
     def convert_to_ticker_info(self, ticker: Ticker, spot: bool, swap: bool, future: bool) -> BaseTickerInfo:
         base, quote = self.parse_symbol(ticker)

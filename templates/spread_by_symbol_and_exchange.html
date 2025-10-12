@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,30 +13,37 @@
             margin-bottom: 20px;
             border: none;
         }
+
         .card-header {
             background-color: #f8f9fa;
             font-weight: 600;
         }
+
         .spread-badge {
             font-size: 1rem;
             padding: 8px 12px;
         }
+
         .exchange-badge {
             font-size: 0.8rem;
         }
+
         .funding-info {
             background-color: #e9ecef;
             border-radius: 5px;
             padding: 10px;
         }
+
         .profit-positive {
             color: #198754;
         }
+
         .market-type {
             font-size: 0.75rem;
         }
     </style>
 </head>
+
 <body>
     <div class="container my-4">
         <h1 class="mb-4"><i class="bi bi-currency-exchange"></i> More info about</h1>
@@ -43,22 +51,24 @@
         <div id="arbitrageData" class="row">
             <!-- Data will be populated here by JavaScript -->
         </div>
+        <div id="chartTitle"></div>
+        <div id="chartContainer" style="position: absolute; width: 90%; height: 60%"></div>
         <div class="d-flex justify-content-center mt-5">
-        <div id="spinner" class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
+            <div id="spinner" class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
         </div>
-      </div>
     </div>
 
     <script>
         window.hiddenParams = {{ hidden_params_json | safe }};
     </script>
-
+    <script type="text/javascript"
+        src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <script src="/static/js/common.js"></script>
+    <script src="/static/js/draw_spread_chart.js"></script>
     <script src="/static/js/renderers.js"></script>
     <script src="/static/js/spread_by_symbol_and_exchange.js"></script>
 </body>
+
 </html>
-
-
-
