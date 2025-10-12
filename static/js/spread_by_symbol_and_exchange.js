@@ -39,9 +39,10 @@ async function renderArbitrageData() {
     }
   } finally {
     setLoadingState(false);
+    renderSpreadChart();
   }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   renderArbitrageData();
 });

@@ -5,6 +5,7 @@ from src.connectors.common_connector import CommonConnector
 from src.connectors.data.base_ticker_info import BaseTickerInfo
 from src.connectors.data.full_ticker_info import FullTickerInfo
 from src.connectors.data.funding_rate_info import FundingRateInfo
+from src.connectors.data.market_candle import MarketCandle
 from src.connectors.future.future_common_connector import FutureCommonConnector
 from src.connectors.spot.spot_common_connector import SpotCommonConnector
 from src.connectors.swap.swap_common_connector import SwapCommonConnector
@@ -52,6 +53,10 @@ class ArbitrageFacade:
         # remove situation where buy futures/swap and sell spot, because usually impossible open short spot position
         filtered_spreads = filter_wrong_pairs(spreads)
         return filtered_spreads
+
+    def fetch_candles(self, symbol: str, exchange: str, exchange_type: str, limit: int, timeframe: str) -> list[MarketCandle]:
+        connector = self.get_connector(exchange, exchange_type)
+        return connector.fetch_ohlcv(symbol=symbol, limit=limit, timeframe=timeframe)
 
     def find_spread_by_symbol(self, symbol_1: str, exchange_1: str, exchange_type_1,
                               symbol_2: str, exchange_2: str, exchange_type_2,
