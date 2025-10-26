@@ -62,10 +62,10 @@ class FullTickerInfo(BaseTickerInfo):
     def get_funding_info(self) -> Optional[FundingRateInfo]:
         return self.funding_rate_info
 
-    def vwap(self, asks_or_bids: List[List[Num]]) -> float | None:
+    def vwap(self, asks_or_bids: List[List[Num]], shift: float = 1.2) -> float | None:
         # level[0] - price, level[1] - volume
         levels = [(level[0], level[1]) for level in asks_or_bids if level[1] > 0]
-        remaining_in_currency = self.amount_in_quote
+        remaining_in_currency = shift * self.amount_in_quote
         bought_amount = 0.0
 
         for price, volume in levels:

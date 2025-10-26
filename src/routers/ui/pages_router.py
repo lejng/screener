@@ -43,3 +43,7 @@ def spread_by_symbol_and_exchange_page(request: Request,
         "amount_in_quote": amount_in_quote
     }
     return templates.TemplateResponse("spread_by_symbol_and_exchange.html", {"request": request,  "hidden_params_json": dumps(hidden_params)})
+
+@router.get("/rates/top", response_class=HTMLResponse)
+def main_page(request: Request):
+    return templates.TemplateResponse("top_fundings.html", {"request": request})
