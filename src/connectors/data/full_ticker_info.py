@@ -65,7 +65,9 @@ class FullTickerInfo(BaseTickerInfo):
     def vwap(self, asks_or_bids: List[List[Num]], shift: float = 1.2) -> float | None:
         # level[0] - price, level[1] - volume
         levels = [(level[0], level[1]) for level in asks_or_bids if level[1] > 0]
-        remaining_in_currency = shift * self.amount_in_quote
+        # used shift as 20% by default
+        amount_in_quote_adjusted_shift = shift * self.amount_in_quote
+        remaining_in_currency = amount_in_quote_adjusted_shift
         bought_amount = 0.0
 
         for price, volume in levels:
@@ -79,5 +81,5 @@ class FullTickerInfo(BaseTickerInfo):
         if remaining_in_currency > 0:
             return None
 
-        avg_price = self.amount_in_quote / bought_amount
+        avg_price = amount_in_quote_adjusted_shift / bought_amount
         return avg_price
