@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funding Rates Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            padding-bottom: 40px;
+        }
+        .exchange-card {
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 10px;
+        }
+        .exchange-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 15px 20px;
+        }
+        .rates-section {
+            padding: 0;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        .positive-rate {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        .negative-rate {
+            color: #28a745;
+            font-weight: 600;
+        }
+        .badge-short {
+            background-color: #dc3545;
+        }
+        .badge-long {
+            background-color: #28a745;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 15px 0 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        .page-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .last-updated {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="display-4">Funding Rates Dashboard</h1>
+            <p class="lead">Top funding rates across multiple exchanges</p>
+            <div class="last-updated" id="lastUpdated"></div>
+        </div>
+        
+        <div id="loading" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        
+        <div id="dataContainer" class="row"></div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Функция для выполнения GET запроса
+        async function fetchData() {
+            try {
+                // В реальном приложении замените URL на ваш эндпоинт
+                const response = await fetch('/api/rates/top');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayData(data);
+                
+                // Обновляем время последнего обновления
+                document.getElementById('lastUpdated').textContent = 
+                    `Last updated: ${new Date().toLocaleString()}`;
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('dataContainer').innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger" role="alert">
+                            Failed to load data: ${error.message}
+                        </div>
+                    </div>
+                `;
+            } finally {
+                // Скрываем спиннер загрузки
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Функция для отображения данных
+        function displayData(data) {
+            const container = document.getElementById('dataContainer');
+            container.innerHTML = '';
+            
+            // Проходим по каждой бирже в данных
+            for (const [exchangeName, exchangeData] of Object.entries(data)) {
+                const exchangeCard = document.createElement('div');
+                exchangeCard.className = 'col-12 col-lg-6';
+                
+                exchangeCard.innerHTML = `
+                    <div class="card exchange-card">
+                        <div class="card-header exchange-header">
+                            <h5 class="card-title mb-0">${exchangeName}</h5>
+                        </div>
+                        <div class="card-body rates-section">
+                            <div class="section-title">Open short for collect funding rates</div>
+                            <div class="table-container">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Symbol</th>
+                                            <th scope="col">Rate</th>
+                                            <th scope="col">Interval</th>
+                                            <th scope="col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${exchangeData.max_rates.map(item => `
+                                            <tr>
+                                                <td>${item.symbol}</td>
+                                                <td class="positive-rate">${item.rate.toFixed(4)}%</td>
+                                                <td>${item.interval || 'N/A'}</td>
+                                                <td><span class="badge badge-short bg-danger">${item.action_for_collect_funding}</span></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="section-title">Open long for collect funding rates</div>
+                            <div class="table-container">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Symbol</th>
+                                            <th scope="col">Rate</th>
+                                            <th scope="col">Interval</th>
+                                            <th scope="col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${exchangeData.min_rates.map(item => `
+                                            <tr>
+                                                <td>${item.symbol}</td>
+                                                <td class="negative-rate">${item.rate.toFixed(4)}%</td>
+                                                <td>${item.interval || 'N/A'}</td>
+                                                <td><span class="badge badge-long bg-success">${item.action_for_collect_funding}</span></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(exchangeCard);
+            }
+        }
+
+        // Загружаем данные при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchData();
+        });
+        
+    </script>
+</body>
+</html>
