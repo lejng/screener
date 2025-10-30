@@ -211,6 +211,7 @@
       const endpoint = filters.noTransfer ? "/api/spreads/no-transfer" : "/api/spreads";
       try {
         setLoadingState(true);
+        getTableBody().innerHTML = "";
         tableContainer.style.display = "none";
         const data = await fetchEndpoint(endpoint, body);
         renderRows(data, filters.amountInUsdt);
