@@ -1,75 +1,57 @@
-# 📊 Spread Scanner: Quantitative Arbitrage Intelligence
+# Crypto Spread & Arbitrage Scanner
 
-A full-stack analytical platform designed to identify and visualize arbitrage opportunities across 10+ cryptocurrency exchanges. This tool bridges the gap between raw data and actionable trading insights by accounting for market-specific factors like funding rates and instrument types.
+A lightweight web application built with Python and FastAPI to scan, analyze, and check cryptocurrency arbitrage spreads, order book depths, and funding rates across multiple centralized and decentralized exchanges.
 
-## 🚀 Key Features
+---
 
-* **Cross-Market Analysis**: Advanced comparison engine supporting **Spot-to-Swap**, **Swap-to-Swap**, and **Future** price discrepancies.
-* **Funding Rate Analysis**: Integrated monitoring of funding rates across perpetual swaps to identify complex arbitrage opportunities and prevent "profit bleeding" during trade holding.
-* **Historical Spreads**: Time-series visualization of spread movements via interactive charts for optimized entry and exit timing.
-* **Multi-Exchange Connectivity**: Real-time data integration with major platforms including **Binance, Bybit, Gate.io, Hyperliquid, OKX**, and more.
+## 📸 Preview
 
-## 🛠 Tech Stack
+### 🏠 Main Dashboard
+<p align="center">
+  <img src="docs/main_page.png" alt="Main Page" width="700">
+</p>
 
-* **Backend**: Python 3.x, FastAPI, Uvicorn.
-* **Logic**: CCXT (Exchange connectivity).
-* **Frontend**: Interactive Web UI.
-* **DevOps**: Docker & Docker Compose.
+### 📊 All Spreads & Filters
+<p align="center">
+  <img src="docs/all_spread_page.png" alt="All Spreads Page" width="700">
+</p>
 
-## 📈 Logic Overview (Funding-Aware Arbitrage)
+### 🪙 Spreads for Coin
+<p align="center">
+  <img src="docs/spread_for_coin_page.png" alt="Spread For Coin Page" width="700">
+</p>
 
-The system goes beyond simple price comparison; it evaluates the actual viability of a trade.
+### 🔍 Order Book Depth & Spread Chart (`More Info`)
+<p align="center">
+  <img src="docs/more_info_page.png" alt="More Info Page" width="700">
+</p>
 
+### 💰 Funding Rates Dashboard
+<p align="center">
+  <img src="docs/top_fundings_page.png" alt="Top Fundings Page" width="700">
+</p>
 
-## Commands (os windows)
+---
 
-### 1. Determinate is it virt env or not
-```
-where pip
-```
+## Features
 
-### 2. Activate virtual env or create virtual env
-activate
-```
-.venv\Scripts\activate
-```
-create:
-```
-python -m venv .venv
-```
+- **Global Spread Search**: Scan the market by clicking a button to find arbitrage spreads between exchanges based on last prices.
+- **Coin-Specific Search**: Analyze spreads for a specific coin name with a custom position amount in USDT.
+- **Order Book Depth Analysis**: Click on any specific trading pair to view detailed information, including order book depth calculations (default set for a $1000 position size) and historical spread charts.
+- **Funding Rates Dashboard**: Monitor the highest and lowest funding rates across multiple supported exchanges to spot potential funding fee opportunities.
 
-### 3. Install/remove dependencies
-```
-pip install -r requirements.txt
+---
 
-pip uninstall -r requirements.txt
-```
+## Tech Stack
 
-### 4. Deactivate virtual env
-```
-deactivate
-```
+- **Backend**: Python, FastAPI, Uvicorn, CCXT library
+- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap 5, Lightweight Charts
 
-### 5. How to run console app
-```
-python -m src.main_console
-```
+---
 
-### 6. How to run web app (dev mode)
-```
-uvicorn src.main_web:app --port 8000 --reload
-uvicorn src.main_web:app --port 8000
-```
+## Quick Start & Installation
 
-### 7. Endpoints
-```
-http://127.0.0.1:8000/
-http://127.0.0.1:8000/docs
-```
-
-## Docker Commands
-
-### 8. Run with Docker Compose
+### 1. Run with Docker Compose
 ```bash
 # Build and start
 docker-compose up --build
@@ -81,7 +63,7 @@ docker-compose up -d
 docker-compose up
 ```
 
-### 9. Stop Docker containers
+### 2. Stop Docker containers
 ```bash
 # Stop containers
 docker-compose down
@@ -92,3 +74,29 @@ docker-compose down -v
 # Stop and remove images
 docker-compose down --rmi all
 ```
+
+### 3. Endpoints
+```
+http://127.0.0.1:8000/
+http://127.0.0.1:8000/docs
+```
+
+## Commands
+
+### 1. Activate create virtual env
+```
+python -m venv .venv
+```
+
+### 2. Install/remove dependencies
+```
+pip install -r requirements.txt
+
+pip uninstall -r requirements.txt
+```
+
+### 3. How to run web app (dev mode)
+```
+uvicorn src.main_web:app --port 8000
+```
+
